@@ -1,13 +1,24 @@
 package eu.tutorials.stepscounter
 
+import android.content.Context
+import android.net.Uri
+import android.widget.FrameLayout
+import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.media3.ui.PlayerView
 
 @Composable
 fun NavigationGraph(
+    videoUri: Uri,
     modifier: Modifier,
     navController: NavHostController,
     authViewModel: AuthViewModel
@@ -18,6 +29,7 @@ fun NavigationGraph(
     ) {
         composable(Screen.StartScreen.route) {
             StartScreen(
+                videoUri = videoUri,
                 onNavigateToLogin = { navController.navigate(Screen.LoginScreen.route)},
                 onNavigateToSignUp = { navController.navigate(Screen.SignupScreen.route)},
                 modifier = modifier
