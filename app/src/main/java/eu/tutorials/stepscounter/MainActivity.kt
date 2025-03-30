@@ -11,7 +11,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import com.google.rpc.context.AttributeContext.Auth
 import eu.tutorials.stepscounter.ui.theme.StepsCounterTheme
 
 
@@ -21,11 +23,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
+            val authViewModel: AuthViewModel = viewModel()
             StepsCounterTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavigationGraph(
                         modifier = Modifier.padding(innerPadding),
-                        navController = navController
+                        navController = navController,
+                        authViewModel = authViewModel
                     )
                 }
             }
