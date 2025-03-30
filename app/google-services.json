@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "324917823051",
+    "project_id": "stepscounter-9c2fa",
+    "storage_bucket": "stepscounter-9c2fa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324917823051:android:9f32ff325c61659e346fce",
+        "android_client_info": {
+          "package_name": "eu.tutorials.stepscounter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9ay3IEU56oaAMPh9f3CbrbN89dTMcG70"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
