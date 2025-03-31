@@ -61,6 +61,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.media3.exoplayer.v100)
     implementation(libs.androidx.media3.ui.v100)
+    implementation(libs.androidx.animation.core.lint)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

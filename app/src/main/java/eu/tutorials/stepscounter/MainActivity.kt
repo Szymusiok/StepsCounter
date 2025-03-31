@@ -23,7 +23,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-
             val navController = rememberNavController()
             val authViewModel: AuthViewModel = viewModel()
             StepsCounterTheme {
