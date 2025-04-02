@@ -56,8 +56,6 @@ fun StartScreen(
     val context = LocalContext.current
     val brandGreen = Color(0xFF4CAF50)
 
-    PutBackground(context = context, videoUri = videoUri)
-
     // vertical gradient overlay
     Box(
         modifier = Modifier

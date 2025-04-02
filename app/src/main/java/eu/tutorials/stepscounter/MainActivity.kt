@@ -17,6 +17,8 @@ import androidx.navigation.compose.rememberNavController
 import eu.tutorials.stepscounter.ui.theme.StepsCounterTheme
 
 
+
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,7 +29,7 @@ class MainActivity : ComponentActivity() {
             val authViewModel: AuthViewModel = viewModel()
             StepsCounterTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    NavigationGraph(
+                    AuthContainer(
                         videoUri = getVideoUri(),
                         modifier = Modifier.padding(innerPadding),
                         navController = navController,

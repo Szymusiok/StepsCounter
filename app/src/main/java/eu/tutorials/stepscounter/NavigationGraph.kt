@@ -6,13 +6,20 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+
+fun isAuthRoute(route: String?) = route in listOf(
+    Screen.StartScreen.route,
+    Screen.LoginScreen.route,
+    Screen.SignupScreen.route
+)
 
 @Composable
 fun NavigationGraph(
     videoUri: Uri,
     modifier: Modifier,
     navController: NavHostController,
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
 ) {
     NavHost(
         navController = navController,
@@ -39,11 +46,13 @@ fun NavigationGraph(
                 authViewModel = authViewModel,
                 onNavigateToSignUp = { navController.navigate(Screen.SignupScreen.route) }
             ){
-                navController.navigate(Screen.MainScreen.route)
+                navController.navigate(Screen.MainFlow.route)
             }
         }
-        composable(Screen.MainScreen.route) {
-            MainScreen()
+        composable(Screen.MainFlow.route) {
+            MainFlowNavGraph(
+                navController = rememberNavController()
+            )
         }
     }
 }

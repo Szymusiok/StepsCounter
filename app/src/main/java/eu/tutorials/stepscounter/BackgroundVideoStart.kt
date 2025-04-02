@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
@@ -38,7 +39,8 @@ import androidx.media3.ui.PlayerView
     }
 
     @Composable
-    fun PutBackground(context: Context, videoUri: Uri) {
+    fun AuthVideoBackground(videoUri: Uri) {
+        val context = LocalContext.current
         val exoPlayer = remember { context.buildExoPlayer(uri = videoUri) }
         AndroidView(
             factory = { context.buildPlayerView(exoPlayer) },

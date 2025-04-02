@@ -39,9 +39,6 @@ fun SignUpScreen(
     var showErrorDialog by remember { mutableStateOf(false)}
     var errorMessage by remember { mutableStateOf("")}
 
-    val context = LocalContext.current
-    PutBackground(context = context, videoUri = videoUri)
-
     LaunchedEffect(authResult) {
         if(authResult is Result.Error){
             errorMessage = (authResult as Result.Error).exception.localizedMessage

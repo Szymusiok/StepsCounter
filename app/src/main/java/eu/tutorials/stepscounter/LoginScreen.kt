@@ -66,9 +66,6 @@ fun LoginScreen(
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
-    val context = LocalContext.current
-    PutBackground(context = context, videoUri = videoUri)
-
     LaunchedEffect(result) {
         when (result) {
             is Result.Success -> onSignInSuccess()
