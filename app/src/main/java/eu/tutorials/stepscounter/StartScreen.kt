@@ -5,6 +5,7 @@ import android.net.Uri
 import android.widget.FrameLayout
 import androidx.annotation.OptIn
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
@@ -31,9 +33,11 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -53,8 +57,6 @@ fun StartScreen(
     onNavigateToSignUp: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val brandGreen = Color(0xFF4CAF50)
 
     // vertical gradient overlay
     Box(
@@ -70,7 +72,7 @@ fun StartScreen(
             )
     )
 
-    // foreground content
+    // 3) Foreground content
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -78,84 +80,83 @@ fun StartScreen(
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Top Section: Icon, Title, Subtitle
+        // Top: Circular “logo” with text
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 32.dp),
+                .padding(top = 128.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Let’s Get Moving!",
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = Color.White
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Track your steps and discover new trails",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White.copy(alpha = 0.9f),
-                textAlign = TextAlign.Center,
+            Box(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            // Version label
-            Text(
-                text = "v0.1",
-                style = MaterialTheme.typography.labelSmall,
-                color = Color.White.copy(alpha = 0.8f),
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-        }
-
-        Column(
-            modifier = Modifier
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Login (Outlined) Button
-            OutlinedButton(
-                onClick = onNavigateToLogin,
-                shape = RoundedCornerShape(50), // pill-shaped
-                border = BorderStroke(2.dp, brandGreen),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.White,
-                    contentColor = brandGreen
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .height(64.dp)
+                    .size(280.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.7f)),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    "Login",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontSize = 20.sp
+                Image(
+                    painter = painterResource(id = R.drawable.logo), // Ensure your logo image is correctly referenced here
+                    contentDescription = "Logo Image",
+                    modifier = Modifier.size(460.dp) // Adjust size if needed
                 )
             }
+        }
 
-            // Register Button
+        // Bottom: Buttons
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // LOGIN button (dark background, white text)
             Button(
-                onClick = onNavigateToSignUp,
+                onClick = onNavigateToLogin,
                 shape = RoundedCornerShape(50), // pill-shaped
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = brandGreen,
+                    containerColor = BORDOWY,
                     contentColor = Color.White
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .height(64.dp)
+                    .height(60.dp)
             ) {
                 Text(
-                    "Get Started",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontSize = 20.sp
+                    text = "LOGIN",
+                    fontSize = 24.sp,
+                    color = JASNY_KREMOWY,
+                    fontFamily = KdamThmorPro
+                    )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // GET STARTED button (white background, dark text)
+            Button(
+                onClick = onNavigateToSignUp,
+                shape = RoundedCornerShape(50), // pill-shaped
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = JASNY_KREMOWY
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+            ) {
+                Text(
+                    text = "GET STARTED",
+                    fontSize = 24.sp,
+                    color = BORDOWY,
+                    fontFamily = KdamThmorPro
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Version label at the bottom
+            Text(
+                text = "v0.1",
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.White.copy(alpha = 0.8f)
+            )
         }
     }
 }
