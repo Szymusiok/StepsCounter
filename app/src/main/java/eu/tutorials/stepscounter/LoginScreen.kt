@@ -1,6 +1,7 @@
 package eu.tutorials.stepscounter
 
 import android.net.Uri
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,10 +19,12 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,6 +48,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,10 +88,11 @@ fun LoginScreen(
         Card(
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .align(Alignment.Center),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.95f)),
+            colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.95f))
         ) {
             Column(
                 modifier = Modifier
@@ -95,22 +100,25 @@ fun LoginScreen(
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Header icon
+                // Optional header icon
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
                     contentDescription = "User Icon",
                     modifier = Modifier.size(72.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = BORDOWY
                 )
                 Spacer(modifier = Modifier.height(16.dp))
+
+                // Email field
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text("Email") },
+                    label = { Text("Email", fontFamily = KdamThmorPro,) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Email,
-                            contentDescription = "Email Icon"
+                            contentDescription = "Email Icon",
+                            tint = BORDOWY
                         )
                     },
                     modifier = Modifier
@@ -118,47 +126,72 @@ fun LoginScreen(
                         .padding(vertical = 8.dp),
                     singleLine = true
                 )
+
+                // Password field
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password") },
+                    label = { Text("Password", fontFamily = KdamThmorPro,) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Lock,
-                            contentDescription = "Password Icon"
+                            contentDescription = "Password Icon",
+                            tint = BORDOWY
                         )
                     },
                     trailingIcon = {
-                        val visibilityIcon = if (passwordVisibility)
+                        val visibilityIcon = if (passwordVisibility) {
                             Icons.Default.Lock
-                        else Icons.Default.Face
+                        } else {
+                            Icons.Default.Info
+                        }
                         IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
                             Icon(
                                 imageVector = visibilityIcon,
-                                contentDescription = if (passwordVisibility) "Hide password" else "Show password"
+                                contentDescription = if (passwordVisibility) "Hide password" else "Show password",
+                                tint = BORDOWY
                             )
                         }
                     },
-                    visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                    visualTransformation = if (passwordVisibility) {
+                        VisualTransformation.None
+                    } else {
+                        PasswordVisualTransformation()
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
                     singleLine = true
                 )
+
+                // "Forgot the password" text
+                Text(
+                    text = "Forgot the password?",
+                    fontFamily = KdamThmorPro,
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .clickable {
+                            //onForgotPassword()
+                        }
+                        .padding(top = 8.dp)
+                )
+
+                // Login button
                 Button(
                     onClick = { authViewModel.login(email, password) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BORDOWY,
+                        contentColor = Color.White
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ExitToApp,
-                        contentDescription = "Login Icon",
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                    Text("Login")
+                    Text("LOGIN", fontFamily = KdamThmorPro, fontSize = 24.sp, color = JASNY_KREMOWY)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
+
+                // "Sign up" text
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.clickable { onNavigateToSignUp() }
@@ -169,25 +202,26 @@ fun LoginScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Don't have an account? Sign up.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
+                        text = "Don't have an account? Sign up",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontFamily = KdamThmorPro,
                     )
                 }
             }
         }
-    }
 
-    if (showErrorDialog) {
-        AlertDialog(
-            onDismissRequest = { showErrorDialog = false },
-            title = { Text("Login Error") },
-            text = { Text(errorMessage) },
-            confirmButton = {
-                TextButton(onClick = { showErrorDialog = false }) {
-                    Text("OK")
+        // 4) Error dialog if login fails
+        if (showErrorDialog) {
+            AlertDialog(
+                onDismissRequest = { showErrorDialog = false },
+                title = { Text("Login Error", fontFamily = KdamThmorPro,) },
+                text = { Text(errorMessage) },
+                confirmButton = {
+                    TextButton(onClick = { showErrorDialog = false }) {
+                        Text("OK", fontFamily = KdamThmorPro,)
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 }
