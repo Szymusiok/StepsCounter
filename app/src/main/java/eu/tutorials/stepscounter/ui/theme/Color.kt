@@ -2,6 +2,9 @@ package eu.tutorials.stepscounter.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+val BORDOWY = Color(0xFF431511)
+val JASNY_KREMOWY = Color(0xFFE1E1E1)
+
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
 val Pink80 = Color(0xFFEFB8C8)

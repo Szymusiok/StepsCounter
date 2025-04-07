@@ -1,4 +1,4 @@
-package eu.tutorials.stepscounter
+package eu.tutorials.stepscounter.navgraphs
 
 import android.net.Uri
 import androidx.compose.runtime.Composable
@@ -7,6 +7,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import eu.tutorials.stepscounter.viewmodels.AuthViewModel
+import eu.tutorials.stepscounter.utils.Screen
+import eu.tutorials.stepscounter.screens.LoginScreen
+import eu.tutorials.stepscounter.screens.SignUpScreen
+import eu.tutorials.stepscounter.screens.StartScreen
 
 fun isAuthRoute(route: String?) = route in listOf(
     Screen.StartScreen.route,

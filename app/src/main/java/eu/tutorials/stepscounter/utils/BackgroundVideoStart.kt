@@ -1,4 +1,4 @@
-package eu.tutorials.stepscounter
+package eu.tutorials.stepscounter.utils
 
 import android.content.Context
 import android.net.Uri

@@ -1,4 +1,4 @@
-package eu.tutorials.stepscounter
+package eu.tutorials.stepscounter.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

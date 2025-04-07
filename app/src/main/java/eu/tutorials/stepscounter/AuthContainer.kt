@@ -1,6 +1,5 @@
 package eu.tutorials.stepscounter
 
-import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import android.net.Uri
@@ -11,13 +10,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import eu.tutorials.stepscounter.viewmodels.AuthViewModel
+import eu.tutorials.stepscounter.utils.AuthVideoBackground
+import eu.tutorials.stepscounter.navgraphs.NavigationGraph
 
 val KdamThmorPro = FontFamily(
     Font(R.font.kdam_thmor_pro, FontWeight.Normal)
 )
-
-val BORDOWY = Color(0xFF431511)
-val JASNY_KREMOWY = Color(0xFFE1E1E1)
 
 @Composable
 fun AuthContainer(

@@ -1,4 +1,4 @@
-package eu.tutorials.stepscounter
+package eu.tutorials.stepscounter.databasehelpers
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore

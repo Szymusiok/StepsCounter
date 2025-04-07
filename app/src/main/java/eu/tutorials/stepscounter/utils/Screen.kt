@@ -1,9 +1,9 @@
-package eu.tutorials.stepscounter
+package eu.tutorials.stepscounter.utils
 
 sealed class Screen(val route:String){
-    object StartScreen: Screen("startscreen")
-    object LoginScreen: Screen("loginscreen")
-    object SignupScreen: Screen("signupscreen")
+    object StartScreen: Screen("start")
+    object LoginScreen: Screen("login")
+    object SignupScreen: Screen("signup")
     object MainFlow: Screen("mainflow")
 }
 

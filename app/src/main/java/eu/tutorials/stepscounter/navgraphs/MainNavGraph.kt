@@ -1,18 +1,17 @@
-package eu.tutorials.stepscounter
+package eu.tutorials.stepscounter.navgraphs
 
-import android.net.Uri
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import eu.tutorials.stepscounter.screens.MainScreen
+import eu.tutorials.stepscounter.utils.MainScreen
 
 @Composable
 fun MainFlowNavGraph(
     navController: NavHostController,
 ){
-    // This NavHost manages all main flow screens (e.g., Home, Detail, Settings).
 
     val mainNavController = rememberNavController()
     NavHost(
@@ -20,6 +19,7 @@ fun MainFlowNavGraph(
         startDestination = MainScreen.HomeScreen.route
     ) {
         composable(MainScreen.HomeScreen.route) {
+            MainScreen()
             //HomeScreen(
               //  onNavigateToDetail = { mainNavController.navigate(MainScreen.Detail.route) },
                // onNavigateToSettings = { mainNavController.navigate(MainScreen.Settings.route) }

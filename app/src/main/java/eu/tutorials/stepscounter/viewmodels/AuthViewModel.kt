@@ -1,10 +1,13 @@
-package eu.tutorials.stepscounter
+package eu.tutorials.stepscounter.viewmodels
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import eu.tutorials.stepscounter.databasehelpers.Injection
+import eu.tutorials.stepscounter.databasehelpers.Result
+import eu.tutorials.stepscounter.databasehelpers.UserRepository
 import kotlinx.coroutines.launch
 
 class AuthViewModel : ViewModel() {
