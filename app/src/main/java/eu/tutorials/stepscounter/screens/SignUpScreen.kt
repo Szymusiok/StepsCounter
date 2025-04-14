@@ -47,7 +47,6 @@ import eu.tutorials.stepscounter.ui.theme.JASNY_KREMOWY
 
 @Composable
 fun SignUpScreen(
-    videoUri: Uri,
     authViewModel: AuthViewModel,
     onNavigateToLogin: () -> Unit
 ) {

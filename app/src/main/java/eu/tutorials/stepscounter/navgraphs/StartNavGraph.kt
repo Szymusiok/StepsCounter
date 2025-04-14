@@ -20,8 +20,7 @@ fun isAuthRoute(route: String?) = route in listOf(
 )
 
 @Composable
-fun NavigationGraph(
-    videoUri: Uri,
+fun StartNavigationGraph(
     modifier: Modifier,
     navController: NavHostController,
     authViewModel: AuthViewModel,
@@ -32,7 +31,6 @@ fun NavigationGraph(
     ) {
         composable(Screen.StartScreen.route) {
             StartScreen(
-                videoUri = videoUri,
                 onNavigateToLogin = { navController.navigate(Screen.LoginScreen.route)},
                 onNavigateToSignUp = { navController.navigate(Screen.SignupScreen.route)},
                 modifier = modifier
@@ -40,14 +38,12 @@ fun NavigationGraph(
         }
         composable(Screen.SignupScreen.route) {
             SignUpScreen(
-                videoUri = videoUri,
                 authViewModel = authViewModel,
                 onNavigateToLogin = { navController.navigate(Screen.LoginScreen.route) }
             )
         }
         composable(Screen.LoginScreen.route) {
             LoginScreen(
-                videoUri = videoUri,
                 authViewModel = authViewModel,
                 onNavigateToSignUp = { navController.navigate(Screen.SignupScreen.route) }
             ){

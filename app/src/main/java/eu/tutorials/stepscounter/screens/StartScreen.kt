@@ -35,7 +35,6 @@ import eu.tutorials.stepscounter.ui.theme.JASNY_KREMOWY
 
 @Composable
 fun StartScreen(
-    videoUri: Uri,
     onNavigateToLogin: () -> Unit,
     onNavigateToSignUp: () -> Unit,
     modifier: Modifier = Modifier

@@ -9,7 +9,9 @@ import androidx.compose.ui.unit.sp
 import eu.tutorials.stepscounter.R
 
 val KdamThmorPro = FontFamily(
-    Font(R.font.kdam_thmor_pro, FontWeight.Normal)
+    Font(
+        R.font.kdam_thmor_pro,
+        FontWeight.Normal)
 )
 
 // Set of Material typography styles to start with

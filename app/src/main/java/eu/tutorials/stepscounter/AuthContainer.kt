@@ -6,13 +6,12 @@ import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import eu.tutorials.stepscounter.viewmodels.AuthViewModel
 import eu.tutorials.stepscounter.utils.AuthVideoBackground
-import eu.tutorials.stepscounter.navgraphs.NavigationGraph
+import eu.tutorials.stepscounter.navgraphs.StartNavigationGraph
 
 val KdamThmorPro = FontFamily(
     Font(R.font.kdam_thmor_pro, FontWeight.Normal)
@@ -31,8 +30,7 @@ fun AuthContainer(
         AuthVideoBackground(
             videoUri = videoUri)
 
-        NavigationGraph(
-            videoUri = videoUri,
+        StartNavigationGraph(
             navController = navController,
             modifier = Modifier,
             authViewModel = authViewModel,

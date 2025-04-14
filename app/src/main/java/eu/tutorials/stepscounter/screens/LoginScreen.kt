@@ -54,7 +54,6 @@ import eu.tutorials.stepscounter.ui.theme.JASNY_KREMOWY
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    videoUri: Uri,
     authViewModel: AuthViewModel,
     onNavigateToSignUp: () -> Unit,
     onSignInSuccess: () -> Unit
