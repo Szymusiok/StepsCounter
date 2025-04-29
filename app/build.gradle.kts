@@ -63,6 +63,11 @@ dependencies {
     implementation(libs.androidx.media3.ui.v100)
     implementation(libs.androidx.animation.core.lint)
 
+    implementation (libs.gms.play.services.maps.v1810)
+    implementation (libs.maps.compose)
+    implementation ("com.google.android.gms:play-services-location:21.3.0")
+    implementation (libs.accompanist.permissions)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
