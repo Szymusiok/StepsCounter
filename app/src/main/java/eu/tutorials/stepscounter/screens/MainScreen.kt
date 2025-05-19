@@ -195,8 +195,10 @@ fun MainScreen(
                     // STEPS PART
                     if (isHiking) {
                         stepsViewModel.stopTracking()
+                        trackingViewModel.stopTracking()
                     } else {
                         stepsViewModel.startTracking()
+                        trackingViewModel.startTracking()
                     }
                     isHiking = !isHiking
                 },
