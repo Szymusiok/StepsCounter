@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,119 +26,192 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.extractor.mp4.Track
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import eu.tutorials.stepscounter.LocationTracker
+import eu.tutorials.stepscounter.screens.settings.SettingsScreen
+import eu.tutorials.stepscounter.screens.settings.SettingsViewModel
+import eu.tutorials.stepscounter.viewmodels.StepsViewModel
+import eu.tutorials.stepscounter.viewmodels.TrackingViewModel
+import eu.tutorials.stepscounter.viewmodels.TrackingViewModelFactory
+
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
+    stepsViewModel: StepsViewModel = viewModel(),
+    onNavigateToSettings: () -> Unit,
+    onNavigateToProfile: () -> Unit
 ) {
-    val context = LocalContext.current
-    val permissions = rememberMultiplePermissionsState(
+    val ctx = LocalContext.current
+
+    val trackingFactory = remember { TrackingViewModelFactory(ctx,stepsViewModel) }
+    val trackingViewModel: TrackingViewModel = viewModel(factory = trackingFactory)
+
+    // 1️⃣ Permissions
+    val permState = rememberMultiplePermissionsState(
         permissions = listOf(
             android.Manifest.permission.ACCESS_FINE_LOCATION,
             android.Manifest.permission.ACCESS_COARSE_LOCATION
         )
     )
-    var currentLoc by remember { mutableStateOf<LatLng?>(null) }
-    val cameraState = rememberCameraPositionState()
 
-    // 1) Request permissions
     LaunchedEffect(Unit) {
-        permissions.launchMultiplePermissionRequest()
+        permState.launchMultiplePermissionRequest()
     }
 
-    // 2) Fetch location when granted
-    LaunchedEffect(permissions.allPermissionsGranted) {
-        if (permissions.allPermissionsGranted) {
-            val loc = LocationTracker(context).getCurrentLocation()
-            loc?.let {
-                currentLoc = it
-                cameraState.position = CameraPosition.fromLatLngZoom(it, 15f)
+    // 2️⃣ Camera state with a default world view:
+    val defaultLatLng = LatLng(0.0, 0.0)
+    val cameraState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(defaultLatLng, 1f)
+    }
+
+    val isTracking  by trackingViewModel.isTracking.collectAsState()
+    val pathPoints  by trackingViewModel.pathPoints.collectAsState()
+    val distanceM   by trackingViewModel.totalDistance.collectAsState()
+    val calories    by trackingViewModel.calories.collectAsState()
+    val elapsedMs   by trackingViewModel.elapsedTime.collectAsState()
+    val steps       by stepsViewModel.steps.collectAsState(initial = 0)
+    var isHiking by remember { mutableStateOf(false) }
+
+    // 3️⃣ Hold onto the real device location
+    var currentLocation by remember { mutableStateOf<LatLng?>(null) }
+
+    // 4️⃣ Fetch location once permissions granted
+    LaunchedEffect(permState.allPermissionsGranted) {
+        if (permState.allPermissionsGranted) {
+            LocationTracker(ctx).getCurrentLocation()?.also { loc ->
+                currentLocation = loc
             }
         }
     }
 
+    // 5️⃣ Animate camera to currentLocation when we get it
+    LaunchedEffect(currentLocation) {
+        currentLocation?.let { latLng ->
+            cameraState.animate(
+                update = CameraUpdateFactory.newLatLngZoom(latLng, 15f),
+                durationMs = 1_000
+            )
+        }
+    }
+
+    // 6️⃣ The UI
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("RunTracker")},
+                title = { Text("GŁÓWNY SCREEN") },
                 actions = {
-                    IconButton(onClick = { /* TODO SETTING*/ }){
+                    IconButton(onClick = onNavigateToProfile) {
                         Icon(Icons.Default.Person, contentDescription = "Profile")
+                    }
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
                 }
             )
         }
     ) { padding ->
         Box(
-            modifier = Modifier.fillMaxSize().padding(padding)
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
         ) {
-            // Map or prompt
-            if (permissions.allPermissionsGranted && currentLoc != null) {
-                GoogleMap(
-                    modifier = Modifier.fillMaxSize(),
-                    cameraPositionState = cameraState,
-                    properties = MapProperties(isMyLocationEnabled = true),
-                    uiSettings = MapUiSettings(myLocationButtonEnabled = true)
-                ) {
-                    Marker(
-                        state = MarkerState(position = currentLoc!!),
-                        title = "You are here"
-                    )
+            DisposableEffect(ctx) {
+                com.google.android.gms.maps.MapsInitializer.initialize(ctx.applicationContext)
+                onDispose { }
+            }
+
+            GoogleMap(
+                modifier = Modifier.fillMaxSize(),
+                cameraPositionState = cameraState,
+                properties = MapProperties(
+                    isMyLocationEnabled = permState.allPermissionsGranted
+                ),
+                uiSettings = MapUiSettings(myLocationButtonEnabled = true)
+            ) {
+                // draw your path
+                if (pathPoints.size > 1) {
+                    Polyline(points = pathPoints, width = 5f)
                 }
-            } else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Grant location permission to view map")
+                // current location marker
+                pathPoints.lastOrNull()?.let {
+                    Marker(state = MarkerState(position = it), title = "You")
                 }
             }
 
-            // --- Top info panel ---
+            if (!permState.allPermissionsGranted) {
+                Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Please grant location permission")
+                }
+            }
+
+            // Top info card
             Card(
-                modifier = Modifier
+                Modifier
                     .align(Alignment.TopCenter)
                     .padding(16.dp)
                     .fillMaxWidth(0.9f),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                elevation = CardDefaults.cardElevation(8.dp),
+                shape = RoundedCornerShape(8.dp)
             ) {
+                val formattedTime = String.format(
+                    "%02d:%02d",
+                    (elapsedMs / 1000) / 60,
+                    (elapsedMs / 1000) % 60
+                )
                 Row(
-                    modifier = Modifier
-                        .padding(12.dp),
+                    Modifier.padding(12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Distance")
-                        Text("0.0 km", style = MaterialTheme.typography.titleMedium)
-                    }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Time")
-                        Text("00:00", style = MaterialTheme.typography.titleMedium)
-                    }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Calories")
-                        Text("0 kcal", style = MaterialTheme.typography.titleMedium)
+                    listOf(
+                        "Distance" to String.format("%.2f km", distanceM / 1000f),
+                        "Time"     to formattedTime,
+                        "Calories" to "${calories.toInt()} kcal",
+                        "Steps"    to "$steps steps"
+                    ).forEach { (label, value) ->
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(label)
+                            Text(value, style = MaterialTheme.typography.titleMedium)
+                        }
                     }
                 }
             }
 
-            // --- Start button ---
+            // Start Button
+            // Start Button
             Button(
-                onClick = { /* TODO: start tracking */ },
+                onClick = {
+                    // STEPS PART
+                    if (isHiking) {
+                        stepsViewModel.stopTracking()
+                    } else {
+                        stepsViewModel.startTracking()
+                    }
+                    isHiking = !isHiking
+                },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(24.dp)
                     .fillMaxWidth(0.6f),
                 shape = RoundedCornerShape(50)
             ) {
-                Text("START")
+                Text(
+                    if (isHiking) "Stop Hiking"
+                    else "Start Hiking"
+                )
             }
+
         }
     }
 }

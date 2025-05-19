@@ -16,7 +16,6 @@ class LocationTracker(context: Context) {
         client.lastLocation
             .addOnSuccessListener { loc ->
                 if (loc != null) {
-                    // now uses the public Maps SDK LatLng
                     cont.resume(LatLng(loc.latitude, loc.longitude))
                 } else {
                     cont.resume(null)

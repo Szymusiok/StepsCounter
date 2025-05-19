@@ -1,6 +1,8 @@
 package eu.tutorials.stepscounter.screens
 
 import android.net.Uri
+import android.util.Log
+import android.content.pm.PackageManager
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,6 +42,11 @@ fun StartScreen(
     onNavigateToSignUp: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    val ctx = LocalContext.current
+    val ai = ctx.packageManager.getApplicationInfo(ctx.packageName, PackageManager.GET_META_DATA)
+    val key = ai.metaData?.getString("com.google.android.geo.API_KEY")
+    Log.i("MAPS_DEBUG", "Loaded Maps API key: $key")
 
     // vertical gradient overlay
     Box(

@@ -3,6 +3,7 @@ plugins {
     id("com.google.gms.google-services")
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
 }
 
 android {
@@ -37,6 +38,7 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
 }
 
@@ -49,7 +51,12 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     //noinspection UseTomlInstead
-    implementation("androidx.compose.runtime:runtime-livedata:1.7.8")
+    implementation("androidx.compose.runtime:runtime-livedata:1.8.1")
+
+    implementation (libs.play.services.maps)
+    implementation (libs.android.maps.utils)
+
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -65,8 +72,11 @@ dependencies {
 
     implementation (libs.gms.play.services.maps.v1810)
     implementation (libs.maps.compose)
-    implementation ("com.google.android.gms:play-services-location:21.3.0")
+    implementation (libs.play.services.location)
+    implementation(libs.maps.compose.v433)
     implementation (libs.accompanist.permissions)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.constraintlayout)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

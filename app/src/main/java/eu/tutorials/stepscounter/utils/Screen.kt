@@ -9,6 +9,6 @@ sealed class Screen(val route:String){
 
 sealed class MainScreen(val route:String){
     object HomeScreen : MainScreen("home")
-    object DetailScreen : MainScreen("detail")
+    object ProfileScreen : MainScreen("profile")
     object SettingsScreen : MainScreen("settings")
 }

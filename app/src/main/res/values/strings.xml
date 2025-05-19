@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">StepsCounter</string>
+    <string name="title_activity_maps">MapsActivity</string>
+    <string name="google_maps_key">AIzaSyBLQu_TJ5iA-f7HODF6UjuDpogyFPXAaWw</string>
+
 </resources>
