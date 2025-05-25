@@ -11,6 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import eu.tutorials.stepscounter.screens.settings.SettingsViewModel
 import eu.tutorials.stepscounter.ui.theme.StepsCounterTheme
 import eu.tutorials.stepscounter.viewmodels.AuthViewModel
 
@@ -22,13 +23,15 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             val authViewModel: AuthViewModel = viewModel()
+            val settingsViewModel : SettingsViewModel = viewModel()
             StepsCounterTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     AuthContainer(
                         videoUri = getVideoUri(),
                         modifier = Modifier.padding(innerPadding),
                         navController = navController,
-                        authViewModel = authViewModel
+                        authViewModel = authViewModel,
+                        settingsViewModel = settingsViewModel
                     )
                 }
             }

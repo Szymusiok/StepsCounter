@@ -3,6 +3,7 @@ package eu.tutorials.stepscounter.navgraphs
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -12,6 +13,7 @@ import eu.tutorials.stepscounter.utils.Screen
 import eu.tutorials.stepscounter.screens.LoginScreen
 import eu.tutorials.stepscounter.screens.SignUpScreen
 import eu.tutorials.stepscounter.screens.StartScreen
+import eu.tutorials.stepscounter.screens.settings.SettingsViewModel
 
 fun isAuthRoute(route: String?) = route in listOf(
     Screen.StartScreen.route,
@@ -24,7 +26,9 @@ fun StartNavigationGraph(
     modifier: Modifier,
     navController: NavHostController,
     authViewModel: AuthViewModel,
+    settingsViewModel: SettingsViewModel
 ) {
+
     NavHost(
         navController = navController,
         startDestination = Screen.StartScreen.route
@@ -57,7 +61,8 @@ fun StartNavigationGraph(
         }
         composable(Screen.MainFlow.route) {
             MainFlowNavGraph(
-                navController = rememberNavController()
+                navController = rememberNavController(),
+                settingsViewModel = settingsViewModel
             )
         }
     }

@@ -21,7 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
-    viewModel: SettingsViewModel = viewModel()
+    viewModel: SettingsViewModel
 ) {
     // Collect state
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
