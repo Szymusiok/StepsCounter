@@ -10,28 +10,27 @@ import eu.tutorials.stepscounter.databasehelpers.Result
 import eu.tutorials.stepscounter.databasehelpers.UserRepository
 import kotlinx.coroutines.launch
 
-class AuthViewModel : ViewModel() {
-    private val userRepository: UserRepository
-
-    init {
-        userRepository = UserRepository(
-            FirebaseAuth.getInstance(),
-            Injection.instance()
-        )
-    }
+class AuthViewModel(
+    private val userRepository: UserRepository = UserRepository(
+        FirebaseAuth.getInstance(),
+        Injection.instance()
+    )
+) : ViewModel() {
 
     private val _authResult = MutableLiveData<Result<Boolean>>()
-    val authResult: LiveData<Result<Boolean>> get() = _authResult
+    val authResult: LiveData<Result<Boolean>> = _authResult
 
     fun signUp(email: String, password: String, firstName: String, lastName: String) {
-        viewModelScope.launch {
-            _authResult.value = userRepository.signUp(email, password, firstName, lastName)
-        }
+        execute { userRepository.signUp(email, password, firstName, lastName) }
     }
 
     fun login(email: String, password: String) {
+        execute { userRepository.login(email, password) }
+    }
+
+    private fun execute(block: suspend () -> Result<Boolean>) {
         viewModelScope.launch {
-            _authResult.value = userRepository.login(email, password)
+            _authResult.value = block()
         }
     }
 }

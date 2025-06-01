@@ -1,25 +1,13 @@
 package eu.tutorials.stepscounter.screens
 
-import android.net.Uri
-import android.util.Log
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,47 +23,49 @@ import eu.tutorials.stepscounter.R
 import eu.tutorials.stepscounter.ui.theme.BORDOWY
 import eu.tutorials.stepscounter.ui.theme.JASNY_KREMOWY
 
-
 @Composable
 fun StartScreen(
     onNavigateToLogin: () -> Unit,
     onNavigateToSignUp: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    // val videoUri = Uri.parse("android.resource://${context.packageName}/${R.raw.auth_video}") // your video file
 
-    val ctx = LocalContext.current
-    val ai = ctx.packageManager.getApplicationInfo(ctx.packageName, PackageManager.GET_META_DATA)
-    val key = ai.metaData?.getString("com.google.android.geo.API_KEY")
-    Log.i("MAPS_DEBUG", "Loaded Maps API key: $key")
-
-    // vertical gradient overlay
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color.Black.copy(alpha = 0.5f),
-                        Color.Transparent
+            .systemBarsPadding() // handle notch, status bar
+    ) {
+        // 🎥 Background Video
+        // AuthVideoBackground(videoUri = videoUri)
+
+        // 🌓 Gradient Overlay (faded, subtle)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.25f),
+                            Color.Transparent
+                        ),
+                        startY = 0f,
+                        endY = 600f
                     )
                 )
-            )
-    )
+        )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // LOGO
+        // 🧱 Foreground UI
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 64.dp),
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 24.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(64.dp))
+
             Box(
                 modifier = Modifier
                     .size(240.dp)
@@ -89,62 +79,41 @@ fun StartScreen(
                     modifier = Modifier.size(460.dp)
                 )
             }
-        }
 
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // LOGIN button
-            Button(
-                onClick = onNavigateToLogin,
-                shape = RoundedCornerShape(50), // pill-shaped
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = BORDOWY,
-                    contentColor = Color.White
-                ),
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
+                    .padding(bottom = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "LOGIN",
-                    fontSize = 18.sp,
-                    color = JASNY_KREMOWY,
-                    fontFamily = KdamThmorPro
-                    )
+                Button(
+                    onClick = onNavigateToLogin,
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(containerColor = BORDOWY),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                ) {
+                    Text("LOGIN", fontSize = 18.sp, color = JASNY_KREMOWY, fontFamily = KdamThmorPro)
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Button(
+                    onClick = onNavigateToSignUp,
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                ) {
+                    Text("GET STARTED", fontSize = 18.sp, color = BORDOWY, fontFamily = KdamThmorPro)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text("v0.1", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.8f))
             }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // GET STARTED button
-            Button(
-                onClick = onNavigateToSignUp,
-                shape = RoundedCornerShape(50), // pill-shaped
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
-                    contentColor = JASNY_KREMOWY
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-            ) {
-                Text(
-                    text = "GET STARTED",
-                    fontSize = 18.sp,
-                    color = BORDOWY,
-                    fontFamily = KdamThmorPro
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Version label
-            Text(
-                text = "v0.1",
-                style = MaterialTheme.typography.labelSmall,
-                color = Color.White.copy(alpha = 0.8f)
-            )
         }
     }
 }

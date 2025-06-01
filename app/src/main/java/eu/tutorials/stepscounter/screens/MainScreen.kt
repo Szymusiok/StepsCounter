@@ -1,26 +1,39 @@
 package eu.tutorials.stepscounter.screens
 
 import android.Manifest
+import android.content.Context
+import android.graphics.Bitmap
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
@@ -30,6 +43,11 @@ import eu.tutorials.stepscounter.screens.settings.SettingsViewModel.DistanceUnit
 import eu.tutorials.stepscounter.viewmodels.StepsViewModel
 import eu.tutorials.stepscounter.viewmodels.TrackingViewModel
 import eu.tutorials.stepscounter.viewmodels.TrackingViewModelFactory
+import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.graphics.toArgb
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
+import eu.tutorials.stepscounter.KdamThmorPro
+import eu.tutorials.stepscounter.R
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
@@ -69,6 +87,8 @@ fun MainScreen(
     val steps by stepsViewModel.steps.collectAsState(initial = 0)
     val distanceUnit by settingsViewModel.distanceUnit.collectAsState()
 
+    val hasFirstLocation = pathPoints.isNotEmpty()
+
     val displayDistance = when (distanceUnit) {
         DistanceUnit.KILOMETERS -> rawMeters / 1000.0
         DistanceUnit.MILES -> rawMeters / 1609.34
@@ -81,6 +101,7 @@ fun MainScreen(
 
     val locationTracker = remember { LocationTracker(context) }
     var currentLocation by remember { mutableStateOf<LatLng?>(null) }
+    var locationLoaded by remember { mutableStateOf(false) }
 
     LaunchedEffect(perms.allPermissionsGranted) {
         if (perms.allPermissionsGranted) {
@@ -100,6 +121,7 @@ fun MainScreen(
                 ),
                 durationMs = 1000
             )
+            locationLoaded = true // ✅ Now we trust that location is visible
         }
     }
 
@@ -112,9 +134,10 @@ fun MainScreen(
         ) {
             if (pathPoints.size > 1) {
                 Polyline(points = pathPoints, color = Color(0xFF2E7D32), width = 5f)
-            }
-            pathPoints.lastOrNull()?.let {
-                Marker(state = MarkerState(position = it))
+
+                pathPoints.lastOrNull()?.let {
+                    Marker(state = MarkerState(position = it))
+                }
             }
         }
 
@@ -131,22 +154,30 @@ fun MainScreen(
             Button(
                 onClick = {
                     if (isTracking) {
+                        if (!hasFirstLocation) return@Button // <- BLOCK premature stop
                         trackingViewModel.stopTracking()
                         onNavigateToSummary(rawMeters, steps, calories.toInt(), elapsedMs, pathPoints)
                     } else {
                         trackingViewModel.startTracking()
                     }
                 },
+                enabled = currentLocation != null || isTracking, // allow start after GPS; stop always enabled
                 shape = RoundedCornerShape(30.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFE37028),
-                    contentColor = Color.White
+                    contentColor = Color.White,
+                    disabledContainerColor = Color(0xFFE37028).copy(alpha = 0.4f),
+                    disabledContentColor = Color.White.copy(alpha = 0.7f)
                 ),
                 modifier = Modifier
                     .height(56.dp)
                     .width(180.dp)
             ) {
-                Text(if (isTracking) "Stop" else "Start", style = MaterialTheme.typography.headlineSmall)
+                Text(
+                    if (isTracking) "Stop" else "Start",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontFamily = KdamThmorPro
+                )
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -184,8 +215,8 @@ fun MainScreen(
 @Composable
 private fun StatItem(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, style = MaterialTheme.typography.labelMedium, color = Color.DarkGray)
-        Text(value, style = MaterialTheme.typography.headlineSmall, color = Color.Black)
+        Text(label, style = MaterialTheme.typography.labelMedium, color = Color.DarkGray, fontFamily = KdamThmorPro)
+        Text(value, style = MaterialTheme.typography.headlineSmall, color = Color.Black, fontFamily = KdamThmorPro)
     }
 }
 
@@ -194,7 +225,7 @@ private fun IconTextButton(text: String, icon: ImageVector, onClick: () -> Unit)
     TextButton(onClick = onClick) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(icon, contentDescription = text, tint = Color.Black)
-            Text(text, color = Color.Black, style = MaterialTheme.typography.bodyMedium)
+            Text(text, color = Color.Black, style = MaterialTheme.typography.bodyMedium, fontFamily = KdamThmorPro)
         }
     }
 }

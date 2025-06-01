@@ -19,19 +19,19 @@ class TrackingViewModel(
 
     private val tracker = LocationTracker(ctx)
 
-    internal val _isTracking    = MutableStateFlow(false)
+    private val _isTracking    = MutableStateFlow(false)
     val isTracking: StateFlow<Boolean> = _isTracking.asStateFlow()
 
-    internal val _pathPoints    = MutableStateFlow<List<LatLng>>(emptyList())
+    private val _pathPoints    = MutableStateFlow<List<LatLng>>(emptyList())
     val pathPoints: StateFlow<List<LatLng>> = _pathPoints.asStateFlow()
 
-    internal val _totalDistance = MutableStateFlow(0.0)
+    private val _totalDistance = MutableStateFlow(0.0)
     val totalDistance: StateFlow<Double> = _totalDistance.asStateFlow()
 
-    internal val _calories      = MutableStateFlow(0.0)
+    private val _calories      = MutableStateFlow(0.0)
     val calories: StateFlow<Double> = _calories.asStateFlow()
 
-    internal val _elapsedTime   = MutableStateFlow(0L)
+    private val _elapsedTime   = MutableStateFlow(0L)
     val elapsedTime: StateFlow<Long> = _elapsedTime.asStateFlow()
 
     private var locationJob: Job? = null
@@ -39,37 +39,45 @@ class TrackingViewModel(
 
     fun startTracking() {
         if (_isTracking.value) return
-        _isTracking.value = true
 
-        // reset
-        _pathPoints.value    = emptyList()
-        _totalDistance.value = 0.0
-        _calories.value      = 0.0
-        _elapsedTime.value   = 0L
+        viewModelScope.launch {
+            val startLocation = tracker.getCurrentLocation()
+            if (startLocation == null) return@launch // don't start without valid location
 
-        timerJob = viewModelScope.launch {
-            while (_isTracking.value) {
-                delay(1_000L)
-                _elapsedTime.update { it + 1_000L }
-            }
-        }
+            val startPoint = LatLng(startLocation.latitude, startLocation.longitude)
 
-        locationJob = viewModelScope.launch {
-            tracker.locationUpdates().collect { newPoint ->
-                val prev = _pathPoints.value.lastOrNull()
+            // reset state
+            _pathPoints.value    = listOf(startPoint)
+            _totalDistance.value = 0.0
+            _calories.value      = 0.0
+            _elapsedTime.value   = 0L
+            _isTracking.value    = true
 
-                _pathPoints.update { old -> old + newPoint }
-
-                prev?.let {
-                    val delta = SphericalUtil.computeDistanceBetween(it, newPoint)
-                    _totalDistance.update { old -> old + delta }
+            // start timer
+            timerJob = launch {
+                while (_isTracking.value) {
+                    delay(1000L)
+                    _elapsedTime.update { it + 1000L }
                 }
-
-                _calories.value = (_totalDistance.value / 1_000.0) * 60.0
             }
-        }
 
-        stepsViewModel.startTracking()
+            // start collecting live updates
+            locationJob = launch {
+                tracker.locationUpdates().collect { newPoint ->
+                    val prev = _pathPoints.value.lastOrNull()
+                    _pathPoints.update { old -> old + newPoint }
+
+                    prev?.let {
+                        val delta = SphericalUtil.computeDistanceBetween(it, newPoint)
+                        _totalDistance.update { old -> old + delta }
+                    }
+
+                    _calories.value = (_totalDistance.value / 1000.0) * 60.0
+                }
+            }
+
+            stepsViewModel.startTracking()
+        }
     }
 
     fun stopTracking() {

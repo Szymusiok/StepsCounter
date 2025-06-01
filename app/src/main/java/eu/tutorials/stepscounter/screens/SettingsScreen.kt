@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import eu.tutorials.stepscounter.KdamThmorPro
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,7 +69,7 @@ fun SettingsScreen(
         containerColor = background,
         topBar = {
             TopAppBar(
-                title = { Text("Settings", color = textColor) },
+                title = { Text("Settings", color = textColor, fontFamily = KdamThmorPro) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = null, tint = textColor)
@@ -118,7 +119,7 @@ fun SettingsScreen(
                     },
                     accent = accent,
                     controlColor = surface,
-                    textColor = textColor
+                    textColor = textColor,
                 )
 
                 SettingSegment(
@@ -161,7 +162,7 @@ fun SettingsScreen(
                     onClick = onAbout,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
-                    Text("About", color = accent, textAlign = TextAlign.Center)
+                    Text("About", color = accent, textAlign = TextAlign.Center, fontFamily = KdamThmorPro)
                 }
 
                 Spacer(Modifier.height(32.dp))
@@ -204,7 +205,7 @@ fun SettingToggle(title: String, value: Boolean, onToggle: (Boolean) -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(title, style = MaterialTheme.typography.bodyLarge)
+        Text(title, style = MaterialTheme.typography.bodyLarge, fontFamily = KdamThmorPro)
         Switch(checked = value, onCheckedChange = onToggle,colors = SwitchDefaults.colors(
             checkedThumbColor = Color.White,
             checkedTrackColor = Color(0xFFE37028),
@@ -225,7 +226,7 @@ fun SettingSegment(
     textColor: Color
 ) {
     Column {
-        Text(title, style = MaterialTheme.typography.bodyLarge, color = textColor)
+        Text(title, style = MaterialTheme.typography.bodyLarge, color = textColor, fontFamily = KdamThmorPro)
         Spacer(Modifier.height(8.dp))
         Row(
             modifier = Modifier
@@ -247,7 +248,7 @@ fun SettingSegment(
                         .padding(vertical = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(label, color = contentColor, style = MaterialTheme.typography.labelLarge)
+                    Text(label, color = contentColor, style = MaterialTheme.typography.labelLarge, fontFamily = KdamThmorPro)
                 }
             }
         }

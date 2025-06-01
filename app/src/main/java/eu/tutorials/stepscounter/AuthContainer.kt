@@ -1,21 +1,22 @@
 package eu.tutorials.stepscounter
 
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
 import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import eu.tutorials.stepscounter.viewmodels.AuthViewModel
-import eu.tutorials.stepscounter.utils.AuthVideoBackground
 import eu.tutorials.stepscounter.navgraphs.StartNavigationGraph
 import eu.tutorials.stepscounter.navgraphs.isAuthRoute
 import eu.tutorials.stepscounter.screens.settings.SettingsViewModel
+import eu.tutorials.stepscounter.utils.AuthVideoBackground
+import eu.tutorials.stepscounter.viewmodels.AuthViewModel
 
 val KdamThmorPro = FontFamily(
     Font(R.font.kdam_thmor_pro, FontWeight.Normal)
@@ -29,21 +30,24 @@ fun AuthContainer(
     authViewModel: AuthViewModel,
     settingsViewModel: SettingsViewModel
 ) {
-    // 1) Watch the nav back-stack for route changes
+    // Watch route changes
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
-
-    // 2) Only show the video on auth-related screens
     val showVideo = isAuthRoute(currentRoute)
 
-    Box(modifier.fillMaxSize()) {
+    // Fullscreen container with system bar padding
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .systemBarsPadding()
+    ) {
         if (showVideo) {
             AuthVideoBackground(videoUri = videoUri)
         }
 
-        // 3) Drive your start/login/signup/main graph here
+        // Navigation graph host
         StartNavigationGraph(
-            modifier      = modifier,
+            modifier = Modifier.fillMaxSize(),
             navController = navController,
             authViewModel = authViewModel,
             settingsViewModel = settingsViewModel
