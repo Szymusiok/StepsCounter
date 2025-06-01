@@ -1,20 +1,27 @@
 package eu.tutorials.stepscounter.screens.settings
 
-import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import android.Manifest
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
@@ -29,21 +36,19 @@ fun SettingsScreen(
     val scope = rememberCoroutineScope()
     val snackHost = remember { SnackbarHostState() }
 
-    val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
+    val context = LocalContext.current
     val activityRecognitionEnabled by viewModel.activityRecognitionEnabled.collectAsState()
+    val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
     val distanceUnit by viewModel.distanceUnit.collectAsState()
     val appTheme by viewModel.appTheme.collectAsState()
     val sensorType by viewModel.sensorType.collectAsState()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
-        onResult = { granted ->
-            viewModel.setActivityRecognitionEnabled(granted)
+        onResult = {
+            viewModel.setActivityRecognitionEnabled(it)
             scope.launch {
-                snackHost.showSnackbar(
-                    if (granted) "Activity recognition enabled"
-                    else "Permission denied, step counting disabled"
-                )
+                snackHost.showSnackbar(if (it) "Activity recognition enabled" else "Permission denied")
             }
         }
     )
@@ -54,15 +59,24 @@ fun SettingsScreen(
         }
     }
 
+    val background = Color(0xFFFFFBF6)
+    val accent = Color(0xFFE37028)
+    val surface = Color(0xFFF3EFEA)
+    val textColor = Color(0xFF222222)
+
     Scaffold(
+        containerColor = background,
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text("Settings", color = textColor) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = null, tint = textColor)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent
+                )
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackHost) }
@@ -72,159 +86,165 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
         ) {
-            Spacer(Modifier.height(16.dp))
+            MountainHeader()
 
-            SettingsToggleItem(
-                label = "Enable Notifications",
-                description = "Receive milestone & reminder alerts",
-                checked = notificationsEnabled,
-                onCheckedChange = {
-                    viewModel.setNotificationsEnabled(it)
-                    scope.launch {
-                        snackHost.showSnackbar(
-                            if (it) "Notifications enabled"
-                            else "Notifications disabled"
-                        )
-                    }
-                }
-            )
-
-            Divider(Modifier.padding(vertical = 8.dp))
-
-            SettingsToggleItem(
-                label = "Activity Recognition",
-                description = "Allow step counting & motion detection",
-                checked = activityRecognitionEnabled,
-                onCheckedChange = {
-                    if (it && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .background(background)
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                SettingToggle("Activity Recognition", activityRecognitionEnabled) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         permissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
-                    } else {
-                        viewModel.setActivityRecognitionEnabled(it)
-                    }
+                    } else viewModel.setActivityRecognitionEnabled(it)
                 }
-            )
 
-            Divider(Modifier.padding(vertical = 8.dp))
-
-            SectionHeader("Units")
-            SettingsRadioItem(
-                label = "Kilometers",
-                selected = distanceUnit == SettingsViewModel.DistanceUnit.KILOMETERS,
-                onSelect = { viewModel.setDistanceUnit(SettingsViewModel.DistanceUnit.KILOMETERS) }
-            )
-            SettingsRadioItem(
-                label = "Miles",
-                selected = distanceUnit == SettingsViewModel.DistanceUnit.MILES,
-                onSelect = { viewModel.setDistanceUnit(SettingsViewModel.DistanceUnit.MILES) }
-            )
-
-            Divider(Modifier.padding(vertical = 8.dp))
-
-            SectionHeader("Sensor Source")
-            SettingsRadioItem(
-                label = "Step Sensor",
-                selected = sensorType == SettingsViewModel.SensorType.STEP_SENSOR,
-                onSelect = { viewModel.setSensorType(SettingsViewModel.SensorType.STEP_SENSOR) }
-            )
-            SettingsRadioItem(
-                label = "Accelerometer",
-                selected = sensorType == SettingsViewModel.SensorType.ACCELEROMETER,
-                onSelect = { viewModel.setSensorType(SettingsViewModel.SensorType.ACCELEROMETER) }
-            )
-
-            Divider(Modifier.padding(vertical = 8.dp))
-
-            SectionHeader("Theme")
-            SettingsViewModel.AppTheme.values().forEach { theme ->
-                val label = when (theme) {
-                    SettingsViewModel.AppTheme.LIGHT -> "Light"
-                    SettingsViewModel.AppTheme.DARK -> "Dark"
-                    SettingsViewModel.AppTheme.SYSTEM -> "Follow System"
+                SettingToggle("Enable Notifications", notificationsEnabled) {
+                    viewModel.setNotificationsEnabled(it)
                 }
-                SettingsRadioItem(
-                    label = label,
-                    selected = appTheme == theme,
-                    onSelect = { viewModel.setAppTheme(theme) }
+
+                SettingSegment(
+                    title = "Units",
+                    options = listOf("Kilometers", "Miles"),
+                    selectedIndex = if (distanceUnit == SettingsViewModel.DistanceUnit.KILOMETERS) 0 else 1,
+                    onSelectIndex = {
+                        viewModel.setDistanceUnit(
+                            if (it == 0) SettingsViewModel.DistanceUnit.KILOMETERS else SettingsViewModel.DistanceUnit.MILES
+                        )
+                    },
+                    accent = accent,
+                    controlColor = surface,
+                    textColor = textColor
                 )
+
+                SettingSegment(
+                    title = "Sensor Source",
+                    options = listOf("Step Sensor", "Accelerometer"),
+                    selectedIndex = if (sensorType == SettingsViewModel.SensorType.STEP_SENSOR) 0 else 1,
+                    onSelectIndex = {
+                        viewModel.setSensorType(
+                            if (it == 0) SettingsViewModel.SensorType.STEP_SENSOR else SettingsViewModel.SensorType.ACCELEROMETER
+                        )
+                    },
+                    accent = accent,
+                    controlColor = surface,
+                    textColor = textColor
+                )
+
+                SettingSegment(
+                    title = "Theme",
+                    options = listOf("Light", "Dark", "System"),
+                    selectedIndex = when (appTheme) {
+                        SettingsViewModel.AppTheme.LIGHT -> 0
+                        SettingsViewModel.AppTheme.DARK -> 1
+                        SettingsViewModel.AppTheme.SYSTEM -> 2
+                    },
+                    onSelectIndex = {
+                        viewModel.setAppTheme(
+                            when (it) {
+                                0 -> SettingsViewModel.AppTheme.LIGHT
+                                1 -> SettingsViewModel.AppTheme.DARK
+                                else -> SettingsViewModel.AppTheme.SYSTEM
+                            }
+                        )
+                    },
+                    accent = accent,
+                    controlColor = surface,
+                    textColor = textColor
+                )
+
+                TextButton(
+                    onClick = onAbout,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text("About", color = accent, textAlign = TextAlign.Center)
+                }
+
+                Spacer(Modifier.height(32.dp))
             }
-
-            Divider(Modifier.padding(vertical = 8.dp))
-
-            ListItem(
-                headlineContent = { Text("Profile") },
-                supportingContent = { Text("View or edit your profile") },
-                trailingContent = {
-                    Icon(Icons.Default.Person, contentDescription = "Profile")
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onProfile() }
-                    .padding(vertical = 8.dp)
-            )
-
-            Divider()
-
-            ListItem(
-                headlineContent = { Text("About") },
-                supportingContent = { Text("App version, licenses, etc.") },
-                trailingContent = {
-                    Icon(Icons.Default.Info, contentDescription = "About")
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onAbout() }
-                    .padding(vertical = 8.dp)
-            )
-
-            Spacer(Modifier.height(24.dp))
         }
     }
 }
 
 @Composable
-private fun SettingsToggleItem(
-    label: String,
-    description: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    ListItem(
-        headlineContent = { Text(label) },
-        supportingContent = { Text(description) },
-        trailingContent = {
-            Switch(checked = checked, onCheckedChange = onCheckedChange)
-        },
-        modifier = Modifier.padding(vertical = 4.dp)
-    )
+fun MountainHeader(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.fillMaxWidth().height(120.dp)) {
+        val width = size.width
+        val height = size.height
+
+        val back = Path().apply {
+            moveTo(0f, height)
+            lineTo(0f, height * 0.5f)
+            cubicTo(width * 0.25f, 0f, width * 0.75f, height, width, height * 0.4f)
+            lineTo(width, height)
+            close()
+        }
+
+        val front = Path().apply {
+            moveTo(0f, height)
+            lineTo(0f, height * 0.65f)
+            cubicTo(width * 0.3f, height * 0.3f, width * 0.7f, height * 0.9f, width, height * 0.5f)
+            lineTo(width, height)
+            close()
+        }
+
+        drawPath(back, Color(0xFFEDE9E0))
+        drawPath(front, Color(0xFFDBD5C7))
+    }
 }
 
 @Composable
-private fun SettingsRadioItem(
-    label: String,
-    selected: Boolean,
-    onSelect: () -> Unit
-) {
-    ListItem(
-        headlineContent = { Text(label) },
-        trailingContent = {
-            RadioButton(selected = selected, onClick = onSelect)
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onSelect)
-            .padding(vertical = 4.dp)
-    )
+fun SettingToggle(title: String, value: Boolean, onToggle: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(title, style = MaterialTheme.typography.bodyLarge)
+        Switch(checked = value, onCheckedChange = onToggle)
+    }
 }
 
 @Composable
-private fun SectionHeader(text: String) {
-    Text(
-        text = text.uppercase(),
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier
-            .padding(top = 16.dp, bottom = 8.dp)
-    )
+fun SettingSegment(
+    title: String,
+    options: List<String>,
+    selectedIndex: Int,
+    onSelectIndex: (Int) -> Unit,
+    accent: Color,
+    controlColor: Color,
+    textColor: Color
+) {
+    Column {
+        Text(title, style = MaterialTheme.typography.bodyLarge, color = textColor)
+        Spacer(Modifier.height(8.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .background(controlColor),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            options.forEachIndexed { i, label ->
+                val selected = i == selectedIndex
+                val background = if (selected) accent else Color.Transparent
+                val contentColor = if (selected) Color.White else textColor
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { onSelectIndex(i) }
+                        .background(background, RoundedCornerShape(24.dp))
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(label, color = contentColor, style = MaterialTheme.typography.labelLarge)
+                }
+            }
+        }
+    }
 }
