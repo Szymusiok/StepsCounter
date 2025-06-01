@@ -1,39 +1,26 @@
 package eu.tutorials.stepscounter.screens
 
 import android.Manifest
-import android.content.Context
-import android.graphics.Bitmap
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
@@ -43,11 +30,7 @@ import eu.tutorials.stepscounter.screens.settings.SettingsViewModel.DistanceUnit
 import eu.tutorials.stepscounter.viewmodels.StepsViewModel
 import eu.tutorials.stepscounter.viewmodels.TrackingViewModel
 import eu.tutorials.stepscounter.viewmodels.TrackingViewModelFactory
-import androidx.compose.material.icons.filled.*
-import androidx.compose.ui.graphics.toArgb
-import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import eu.tutorials.stepscounter.KdamThmorPro
-import eu.tutorials.stepscounter.R
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
@@ -126,6 +109,18 @@ fun MainScreen(
     }
 
     Box(Modifier.fillMaxSize()) {
+        if (!locationLoaded) {
+            // Show loading indicator over darkened background
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Color(0xFFE37028))
+            }
+        }
+
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraState,

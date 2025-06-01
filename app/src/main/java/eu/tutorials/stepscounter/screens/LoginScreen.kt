@@ -1,5 +1,6 @@
 package eu.tutorials.stepscounter.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,6 +38,8 @@ fun LoginScreen(
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
+    val isLoading by authViewModel.isLoading.observeAsState(false)
+
     LaunchedEffect(result) {
         when (result) {
             is Result.Success -> onSignInSuccess()
@@ -71,6 +74,17 @@ fun LoginScreen(
                     }
                 }
             )
+        }
+
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = BORDOWY)
+            }
         }
     }
 }

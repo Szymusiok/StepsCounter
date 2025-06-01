@@ -16,53 +16,54 @@ import kotlin.coroutines.resumeWithException
 
 class LocationTracker(private val context: Context) {
 
-    private val client = LocationServices.getFusedLocationProviderClient(context)
+    private val locationClient = LocationServices.getFusedLocationProviderClient(context)
 
-    /** One-shot “last known” location, or null if none available. */
+    /** Returns last known location or null if unavailable. */
     @SuppressLint("MissingPermission")
     suspend fun getCurrentLocation(): LatLng? = suspendCancellableCoroutine { cont ->
-        client.lastLocation
-            .addOnSuccessListener { loc ->
-                if (loc != null) cont.resume(LatLng(loc.latitude, loc.longitude))
-                else           cont.resume(null)
+        locationClient.lastLocation
+            .addOnSuccessListener { location ->
+                cont.resume(location?.let { LatLng(it.latitude, it.longitude) })
             }
-            .addOnFailureListener { e ->
-                cont.resumeWithException(e)
+            .addOnFailureListener { exception ->
+                cont.resumeWithException(exception)
             }
     }
 
-    /** Continuous updates every ~intervalMs. */
+    /** Emits continuous location updates via Flow. */
     @SuppressLint("MissingPermission")
     fun locationUpdates(
         intervalMs: Long = 2_000L,
         fastestMs: Long = 1_000L
     ): Flow<LatLng> = callbackFlow {
+        if (!hasLocationPermission()) {
+            close(SecurityException("Location permission not granted"))
+            return@callbackFlow
+        }
+
+        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, intervalMs)
+            .setMinUpdateIntervalMillis(fastestMs)
+            .build()
+
+        val callback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                result.lastLocation?.let {
+                    trySend(LatLng(it.latitude, it.longitude)).isSuccess
+                }
+            }
+        }
+
+        locationClient.requestLocationUpdates(request, callback, Looper.getMainLooper())
+        awaitClose { locationClient.removeLocationUpdates(callback) }
+    }
+
+    private fun hasLocationPermission(): Boolean {
         val fine = ContextCompat.checkSelfPermission(
             context, android.Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
         val coarse = ContextCompat.checkSelfPermission(
             context, android.Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
-
-        if (!fine && !coarse) {
-            close(SecurityException("Location permission not granted"))
-            return@callbackFlow
-        }
-
-        val req = LocationRequest.create().apply {
-            interval = intervalMs
-            fastestInterval = fastestMs
-            priority = Priority.PRIORITY_HIGH_ACCURACY
-        }
-        val cb = object : LocationCallback() {
-            override fun onLocationResult(result: LocationResult) {
-                result.lastLocation?.let {
-                    trySend(LatLng(it.latitude, it.longitude))
-                }
-            }
-        }
-
-        client.requestLocationUpdates(req, cb, Looper.getMainLooper())
-        awaitClose { client.removeLocationUpdates(cb) }
+        return fine || coarse
     }
 }
