@@ -4,6 +4,7 @@ import android.Manifest
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -14,6 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -50,7 +53,7 @@ fun MainScreen(
         pathPoints: List<LatLng>
     ) -> Unit
 ) {
-    val ctx = LocalContext.current
+    val context = LocalContext.current
 
     val perms = rememberMultiplePermissionsState(
         listOf(
@@ -61,39 +64,25 @@ fun MainScreen(
     )
     LaunchedEffect(Unit) { perms.launchMultiplePermissionRequest() }
 
-    val isTracking  by trackingViewModel.isTracking.collectAsState()
-    val pathPoints  by trackingViewModel.pathPoints.collectAsState()
-    val rawDistance by trackingViewModel.totalDistance.collectAsState(initial = 0.0)
-    val calories    by trackingViewModel.calories.collectAsState(initial = 0.0)
-    val elapsedMs   by trackingViewModel.elapsedTime.collectAsState(initial = 0L)
-
-    val didFallback by stepsViewModel.fallbackToAccel.observeAsState(initial = false)
-    var showFallbackDialog by remember { mutableStateOf(false) }
-
-    val steps by stepsViewModel.steps.collectAsState(initial = 0)
-
-    val distanceUnit by settingsViewModel.distanceUnit.collectAsState()
-    val appTheme     by settingsViewModel.appTheme.collectAsState()
-
-    SideEffect {
-        when (appTheme) {
-            AppTheme.LIGHT  -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            AppTheme.DARK   -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            AppTheme.SYSTEM -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-        }
-    }
-
+    val isTracking by trackingViewModel.isTracking.collectAsState()
+    val pathPoints by trackingViewModel.pathPoints.collectAsState()
     val rawMeters by trackingViewModel.totalDistance.collectAsState(initial = 0.0)
+    val calories by trackingViewModel.calories.collectAsState(initial = 0.0)
+    val elapsedMs by trackingViewModel.elapsedTime.collectAsState(initial = 0L)
+    val steps by stepsViewModel.steps.collectAsState(initial = 0)
+    val distanceUnit by settingsViewModel.distanceUnit.collectAsState()
+
     val displayDistance = when (distanceUnit) {
-        SettingsViewModel.DistanceUnit.KILOMETERS -> rawMeters / 1000.0
-        SettingsViewModel.DistanceUnit.MILES      -> rawMeters / 1609.34
+        DistanceUnit.KILOMETERS -> rawMeters / 1000.0
+        DistanceUnit.MILES      -> rawMeters / 1609.34
     }
-    val unitLabel = if (distanceUnit == SettingsViewModel.DistanceUnit.MILES) "mi" else "km"
+    val unitLabel = if (distanceUnit == DistanceUnit.MILES) "mi" else "km"
 
     val cameraState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(0.0, 0.0), 1f)
     }
-    val locationTracker = remember { LocationTracker(ctx) }
+
+    val locationTracker = remember { LocationTracker(context) }
     var currentLocation by remember { mutableStateOf<LatLng?>(null) }
     LaunchedEffect(perms.allPermissionsGranted) {
         if (perms.allPermissionsGranted) {
@@ -101,122 +90,115 @@ fun MainScreen(
         }
     }
     LaunchedEffect(currentLocation) {
-        currentLocation?.let {
+        currentLocation?.let { location ->
+            // Shift the camera slightly north to visually raise the location marker
+            val shiftedLatLng = LatLng(location.latitude - 0.005, location.longitude)
+
             cameraState.animate(
-                update     = CameraUpdateFactory.newLatLngZoom(it, 15f),
-                durationMs = 1_000
+                CameraUpdateFactory.newCameraPosition(
+                    CameraPosition.Builder()
+                        .target(shiftedLatLng)
+                        .zoom(15f)
+                        .build()
+                ),
+                durationMs = 1000
             )
         }
-    }
-    LaunchedEffect(didFallback) {
-        if (didFallback) {
-            showFallbackDialog = true
-        }
-    }
-    if (showFallbackDialog) {
-        AlertDialog(
-            onDismissRequest = { showFallbackDialog = false },
-            title = { Text("No Step Sensor Detected") },
-            text = { Text("Falling back to raw accelerometer; results may vary.") },
-            confirmButton = {
-                TextButton(onClick = { showFallbackDialog = false }) {
-                    Text("OK")
-                }
-            }
-        )
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("GŁÓWNY SCREEN") },
-                actions = {
-                    IconButton(onClick = onNavigateToProfile) {
-                        Icon(Icons.Default.Person, contentDescription = "Profile")
-                    }
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Box(
-            Modifier
-                .fillMaxSize()
-                .padding(padding)
+    Box(Modifier.fillMaxSize()) {
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraState,
+            properties = MapProperties(isMyLocationEnabled = perms.allPermissionsGranted),
+            uiSettings = MapUiSettings(myLocationButtonEnabled = true)
         ) {
-            GoogleMap(
-                modifier            = Modifier.fillMaxSize(),
-                cameraPositionState = cameraState,
-                properties          = MapProperties(isMyLocationEnabled = perms.allPermissionsGranted),
-                uiSettings          = MapUiSettings(myLocationButtonEnabled = true)
-            ) {
-                if (pathPoints.size > 1) Polyline(points = pathPoints, width = 5f)
-                pathPoints.lastOrNull()?.let {
-                    Marker(state = MarkerState(position = it), title = "You")
-                }
+            if (pathPoints.size > 1) {
+                Polyline(points = pathPoints, color = Color(0xFF2E7D32), width = 5f)
             }
-
-            if (!perms.allPermissionsGranted) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Please grant location permission")
-                }
+            pathPoints.lastOrNull()?.let {
+                Marker(state = MarkerState(position = it))
             }
+        }
 
-            Card(
-                modifier  = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(16.dp)
-                    .fillMaxWidth(0.9f),
-                elevation = CardDefaults.cardElevation(8.dp),
-                shape     = RoundedCornerShape(8.dp)
-            ) {
-                val formattedTime = String.format(
-                    "%02d:%02d",
-                    (elapsedMs / 1000) / 60,
-                    (elapsedMs / 1000) % 60
-                )
-                Row(
-                    Modifier.padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    listOf(
-                        "Distance" to String.format("%.2f %s", displayDistance, unitLabel),
-                        "Time"     to formattedTime,
-                        "Calories" to "${calories.toInt()} kcal",
-                        "Steps"    to "$steps"
-                    ).forEach { (label, value) ->
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(label)
-                            Text(value, style = MaterialTheme.typography.titleMedium)
-                        }
-                    }
-                }
-            }
-
+        // Bottom layout stack
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(Color(0xFFFDFBF9), shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                .padding(vertical = 16.dp, horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Start button (above stats)
             Button(
                 onClick = {
-                    if (isTracking){
+                    if (isTracking) {
                         trackingViewModel.stopTracking()
-                        onNavigateToSummary(
-                            rawMeters,
-                            steps,
-                            calories.toInt(),
-                            elapsedMs,
-                            pathPoints
-                        )
+                        onNavigateToSummary(rawMeters, steps, calories.toInt(), elapsedMs, pathPoints)
+                    } else {
+                        trackingViewModel.startTracking()
                     }
-                    else            trackingViewModel.startTracking()
                 },
+                shape = RoundedCornerShape(30.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFE37028),
+                    contentColor = Color.White
+                ),
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(24.dp)
-                    .fillMaxWidth(0.6f),
-                shape = RoundedCornerShape(50)
+                    .height(56.dp)
+                    .width(160.dp)
             ) {
-                Text(if (isTracking) "Stop Hiking" else "Start Hiking")
+                Text(if (isTracking) "Stop" else "Start", style = MaterialTheme.typography.titleLarge)
+            }
+
+            // Stats
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+                StatItem("DURATION", formatTime(elapsedMs))
+                StatItem("DISTANCE", String.format("%.2f %s", displayDistance, unitLabel))
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+                StatItem("CALORIES", "${calories.toInt()} kcal")
+                StatItem("STEPS", "$steps")
+            }
+
+            // Bottom nav
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                IconTextButton("Profile", Icons.Default.Person, onClick = onNavigateToProfile)
+                IconTextButton("Settings", Icons.Default.Settings, onClick = onNavigateToSettings)
             }
         }
     }
+}
+
+@Composable
+private fun StatItem(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(label, style = MaterialTheme.typography.labelSmall, color = Color.DarkGray)
+        Text(value, style = MaterialTheme.typography.titleMedium, color = Color.Black)
+    }
+}
+
+@Composable
+private fun IconTextButton(text: String, icon: ImageVector, onClick: () -> Unit) {
+    TextButton(onClick = onClick) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(icon, contentDescription = text, tint = Color.Black)
+            Text(text, color = Color.Black)
+        }
+    }
+}
+
+private fun formatTime(ms: Long): String {
+    val totalSec = ms / 1000
+    val hrs = totalSec / 3600
+    val min = (totalSec % 3600) / 60
+    val sec = totalSec % 60
+    return String.format("%02d:%02d:%02d", hrs, min, sec)
 }

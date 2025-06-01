@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
@@ -30,14 +29,12 @@ fun SettingsScreen(
     val scope = rememberCoroutineScope()
     val snackHost = remember { SnackbarHostState() }
 
-    // collect state
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
     val activityRecognitionEnabled by viewModel.activityRecognitionEnabled.collectAsState()
     val distanceUnit by viewModel.distanceUnit.collectAsState()
     val appTheme by viewModel.appTheme.collectAsState()
+    val sensorType by viewModel.sensorType.collectAsState()
 
-    // permission launcher
-    val context = LocalContext.current
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted ->
@@ -50,6 +47,12 @@ fun SettingsScreen(
             }
         }
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.sensorError.collect {
+            snackHost.showSnackbar(it)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -73,7 +76,6 @@ fun SettingsScreen(
         ) {
             Spacer(Modifier.height(16.dp))
 
-            // Notifications
             SettingsToggleItem(
                 label = "Enable Notifications",
                 description = "Receive milestone & reminder alerts",
@@ -91,25 +93,22 @@ fun SettingsScreen(
 
             Divider(Modifier.padding(vertical = 8.dp))
 
-            // Activity recognition toggle
             SettingsToggleItem(
                 label = "Activity Recognition",
                 description = "Allow step counting & motion detection",
                 checked = activityRecognitionEnabled,
-                onCheckedChange = { enabled ->
-                    // request permission on Android Q+
-                    if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                onCheckedChange = {
+                    if (it && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         permissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
                     } else {
-                        viewModel.setActivityRecognitionEnabled(enabled)
+                        viewModel.setActivityRecognitionEnabled(it)
                     }
                 }
             )
 
             Divider(Modifier.padding(vertical = 8.dp))
 
-            // Units
-            SectionHeader(text = "Units")
+            SectionHeader("Units")
             SettingsRadioItem(
                 label = "Kilometers",
                 selected = distanceUnit == SettingsViewModel.DistanceUnit.KILOMETERS,
@@ -123,12 +122,25 @@ fun SettingsScreen(
 
             Divider(Modifier.padding(vertical = 8.dp))
 
-            // Theme
-            SectionHeader(text = "Theme")
+            SectionHeader("Sensor Source")
+            SettingsRadioItem(
+                label = "Step Sensor",
+                selected = sensorType == SettingsViewModel.SensorType.STEP_SENSOR,
+                onSelect = { viewModel.setSensorType(SettingsViewModel.SensorType.STEP_SENSOR) }
+            )
+            SettingsRadioItem(
+                label = "Accelerometer",
+                selected = sensorType == SettingsViewModel.SensorType.ACCELEROMETER,
+                onSelect = { viewModel.setSensorType(SettingsViewModel.SensorType.ACCELEROMETER) }
+            )
+
+            Divider(Modifier.padding(vertical = 8.dp))
+
+            SectionHeader("Theme")
             SettingsViewModel.AppTheme.values().forEach { theme ->
                 val label = when (theme) {
-                    SettingsViewModel.AppTheme.LIGHT  -> "Light"
-                    SettingsViewModel.AppTheme.DARK   -> "Dark"
+                    SettingsViewModel.AppTheme.LIGHT -> "Light"
+                    SettingsViewModel.AppTheme.DARK -> "Dark"
                     SettingsViewModel.AppTheme.SYSTEM -> "Follow System"
                 }
                 SettingsRadioItem(
@@ -140,7 +152,6 @@ fun SettingsScreen(
 
             Divider(Modifier.padding(vertical = 8.dp))
 
-            // Profile
             ListItem(
                 headlineContent = { Text("Profile") },
                 supportingContent = { Text("View or edit your profile") },
@@ -155,7 +166,6 @@ fun SettingsScreen(
 
             Divider()
 
-            // About
             ListItem(
                 headlineContent = { Text("About") },
                 supportingContent = { Text("App version, licenses, etc.") },
