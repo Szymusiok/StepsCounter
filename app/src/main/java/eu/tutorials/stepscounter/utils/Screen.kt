@@ -11,4 +11,5 @@ sealed class MainScreen(val route:String){
     object HomeScreen : MainScreen("home")
     object ProfileScreen : MainScreen("profile")
     object SettingsScreen : MainScreen("settings")
+    object SummaryScreen : MainScreen("summary")
 }

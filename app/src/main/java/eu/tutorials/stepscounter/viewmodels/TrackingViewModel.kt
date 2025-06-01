@@ -25,13 +25,13 @@ class TrackingViewModel(
     private val _pathPoints    = MutableStateFlow<List<LatLng>>(emptyList())
     val pathPoints: StateFlow<List<LatLng>> = _pathPoints.asStateFlow()
 
-    private val _totalDistance = MutableStateFlow(0.0)    // in meters
+    private val _totalDistance = MutableStateFlow(0.0)
     val totalDistance: StateFlow<Double> = _totalDistance.asStateFlow()
 
-    private val _calories      = MutableStateFlow(0.0)    // in kcal
+    private val _calories      = MutableStateFlow(0.0)
     val calories: StateFlow<Double> = _calories.asStateFlow()
 
-    private val _elapsedTime   = MutableStateFlow(0L)      // in ms
+    private val _elapsedTime   = MutableStateFlow(0L)
     val elapsedTime: StateFlow<Long> = _elapsedTime.asStateFlow()
 
     private var locationJob: Job? = null
@@ -47,7 +47,6 @@ class TrackingViewModel(
         _calories.value      = 0.0
         _elapsedTime.value   = 0L
 
-        // 1) timer
         timerJob = viewModelScope.launch {
             while (_isTracking.value) {
                 delay(1_000L)
@@ -55,26 +54,21 @@ class TrackingViewModel(
             }
         }
 
-        // 2) location
         locationJob = viewModelScope.launch {
             tracker.locationUpdates().collect { newPoint ->
                 val prev = _pathPoints.value.lastOrNull()
 
-                // append point
                 _pathPoints.update { old -> old + newPoint }
 
-                // incremental distance
                 prev?.let {
                     val delta = SphericalUtil.computeDistanceBetween(it, newPoint)
                     _totalDistance.update { old -> old + delta }
                 }
 
-                // calories @ 60 kcal/km
                 _calories.value = (_totalDistance.value / 1_000.0) * 60.0
             }
         }
 
-        // 3) steps
         stepsViewModel.startTracking()
     }
 

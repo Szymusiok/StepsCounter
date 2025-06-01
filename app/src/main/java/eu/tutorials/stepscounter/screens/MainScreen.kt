@@ -1,6 +1,8 @@
 package eu.tutorials.stepscounter.screens
 
 import android.Manifest
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,6 +11,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,6 +31,7 @@ import eu.tutorials.stepscounter.viewmodels.TrackingViewModel
 import eu.tutorials.stepscounter.viewmodels.TrackingViewModelFactory
 import eu.tutorials.stepscounter.viewmodels.StepsViewModel
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
@@ -38,33 +42,39 @@ fun MainScreen(
     ),
     onNavigateToSettings: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    onNavigateToSummary: (
+        totalDistance: Double,
+        steps: Int,
+        calories: Int,
+        elapsedTimeMs: Long,
+        pathPoints: List<LatLng>
+    ) -> Unit
 ) {
     val ctx = LocalContext.current
 
-    // 1) Permissions
     val perms = rememberMultiplePermissionsState(
         listOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACTIVITY_RECOGNITION
         )
     )
     LaunchedEffect(Unit) { perms.launchMultiplePermissionRequest() }
 
-    // 2) Collect VM state
     val isTracking  by trackingViewModel.isTracking.collectAsState()
     val pathPoints  by trackingViewModel.pathPoints.collectAsState()
     val rawDistance by trackingViewModel.totalDistance.collectAsState(initial = 0.0)
     val calories    by trackingViewModel.calories.collectAsState(initial = 0.0)
     val elapsedMs   by trackingViewModel.elapsedTime.collectAsState(initial = 0L)
 
-    // **Collect steps from the StepsViewModel**:
+    val didFallback by stepsViewModel.fallbackToAccel.observeAsState(initial = false)
+    var showFallbackDialog by remember { mutableStateOf(false) }
+
     val steps by stepsViewModel.steps.collectAsState(initial = 0)
 
-    // 3) Settings state
     val distanceUnit by settingsViewModel.distanceUnit.collectAsState()
     val appTheme     by settingsViewModel.appTheme.collectAsState()
 
-    // 4) Apply theme immediately
     SideEffect {
         when (appTheme) {
             AppTheme.LIGHT  -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -73,7 +83,6 @@ fun MainScreen(
         }
     }
 
-    // Convert raw meters → km or mi
     val rawMeters by trackingViewModel.totalDistance.collectAsState(initial = 0.0)
     val displayDistance = when (distanceUnit) {
         SettingsViewModel.DistanceUnit.KILOMETERS -> rawMeters / 1000.0
@@ -81,7 +90,6 @@ fun MainScreen(
     }
     val unitLabel = if (distanceUnit == SettingsViewModel.DistanceUnit.MILES) "mi" else "km"
 
-    // 6) Map + one-shot camera
     val cameraState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(0.0, 0.0), 1f)
     }
@@ -99,6 +107,23 @@ fun MainScreen(
                 durationMs = 1_000
             )
         }
+    }
+    LaunchedEffect(didFallback) {
+        if (didFallback) {
+            showFallbackDialog = true
+        }
+    }
+    if (showFallbackDialog) {
+        AlertDialog(
+            onDismissRequest = { showFallbackDialog = false },
+            title = { Text("No Step Sensor Detected") },
+            text = { Text("Falling back to raw accelerometer; results may vary.") },
+            confirmButton = {
+                TextButton(onClick = { showFallbackDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -172,7 +197,16 @@ fun MainScreen(
 
             Button(
                 onClick = {
-                    if (isTracking) trackingViewModel.stopTracking()
+                    if (isTracking){
+                        trackingViewModel.stopTracking()
+                        onNavigateToSummary(
+                            rawMeters,
+                            steps,
+                            calories.toInt(),
+                            elapsedMs,
+                            pathPoints
+                        )
+                    }
                     else            trackingViewModel.startTracking()
                 },
                 modifier = Modifier

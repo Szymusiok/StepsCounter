@@ -1,72 +1,81 @@
-// SettingsViewModel.kt
 package eu.tutorials.stepscounter.screens.settings
 
 import android.app.Application
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.AndroidViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
 class SettingsViewModel(app: Application) : AndroidViewModel(app) {
+    private val prefs = app.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    private val prefs = app.getSharedPreferences("user_settings", Context.MODE_PRIVATE)
+    companion object {
+        private const val PREFS_NAME = "user_settings"
+        private const val KEY_NOTIF = "notifications_enabled"
+        private const val KEY_ACTIVITY = "activity_recognition_enabled"
+        private const val KEY_UNIT = "distance_unit"
+        private const val KEY_THEME = "app_theme"
+    }
 
-    // --- Notifications toggle ---
+    // Notifications
     private val _notificationsEnabled = MutableStateFlow(
-        prefs.getBoolean("notifications_enabled", true)
+        prefs.getBoolean(KEY_NOTIF, true)
     )
     val notificationsEnabled: StateFlow<Boolean> = _notificationsEnabled.asStateFlow()
-
-    fun setNotificationsEnabled(on: Boolean) {
-        prefs.edit().putBoolean("notifications_enabled", on).apply()
+    fun setNotificationsEnabled(on: Boolean) = updatePref(KEY_NOTIF, on) {
         _notificationsEnabled.value = on
     }
 
-    // --- Activity Recognition toggle ---
+    // Activity recognition
     private val _activityRecognitionEnabled = MutableStateFlow(
-        prefs.getBoolean("activity_recognition_enabled", true)
+        prefs.getBoolean(KEY_ACTIVITY, true)
     )
     val activityRecognitionEnabled: StateFlow<Boolean> = _activityRecognitionEnabled.asStateFlow()
-
-    fun setActivityRecognitionEnabled(on: Boolean) {
-        prefs.edit().putBoolean("activity_recognition_enabled", on).apply()
+    fun setActivityRecognitionEnabled(on: Boolean) = updatePref(KEY_ACTIVITY, on) {
         _activityRecognitionEnabled.value = on
     }
 
-    // --- Distance units ---
+    // Distance units
     enum class DistanceUnit { KILOMETERS, MILES }
     private val _distanceUnit = MutableStateFlow(
-        DistanceUnit.valueOf(
-            prefs.getString("distance_unit", DistanceUnit.KILOMETERS.name)!!
-        )
+        DistanceUnit.valueOf(prefs.getString(KEY_UNIT, DistanceUnit.KILOMETERS.name)!!)
     )
     val distanceUnit: StateFlow<DistanceUnit> = _distanceUnit.asStateFlow()
-
-    fun setDistanceUnit(unit: DistanceUnit) {
-        prefs.edit().putString("distance_unit", unit.name).apply()
+    fun setDistanceUnit(unit: DistanceUnit) = updatePref(KEY_UNIT, unit.name) {
         _distanceUnit.value = unit
     }
 
-    // --- App theme ---
+    // App theme
     enum class AppTheme { LIGHT, DARK, SYSTEM }
     private val _appTheme = MutableStateFlow(
-        AppTheme.valueOf(
-            prefs.getString("app_theme", AppTheme.SYSTEM.name)!!
-        )
+        AppTheme.valueOf(prefs.getString(KEY_THEME, AppTheme.SYSTEM.name)!!)
     )
     val appTheme: StateFlow<AppTheme> = _appTheme.asStateFlow()
-
     fun setAppTheme(theme: AppTheme) {
-        prefs.edit().putString("app_theme", theme.name).apply()
-        _appTheme.value = theme
+        updatePref(KEY_THEME, theme.name) { _appTheme.value = theme }
+        AppCompatDelegate.setDefaultNightMode(
+            when (theme) {
+                AppTheme.LIGHT  -> AppCompatDelegate.MODE_NIGHT_NO
+                AppTheme.DARK   -> AppCompatDelegate.MODE_NIGHT_YES
+                AppTheme.SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            }
+        )
+    }
 
-        // apply immediately
-        when (theme) {
-            AppTheme.LIGHT  -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            AppTheme.DARK   -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            AppTheme.SYSTEM -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+    // helper to write pref + callback
+    private fun <T> updatePref(key: String, value: T, after: () -> Unit) {
+        viewModelScope.launch {
+            prefs.edit().apply {
+                when (value) {
+                    is Boolean -> putBoolean(key, value)
+                    is String  -> putString(key, value)
+                    else       -> error("Unsupported type")
+                }
+                apply()
+            }
+            after()
         }
     }
 }

@@ -73,12 +73,12 @@ fun StartScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 128.dp),
+                .padding(top = 64.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 modifier = Modifier
-                    .size(280.dp)
+                    .size(240.dp)
                     .clip(CircleShape)
                     .background(Color.Black.copy(alpha = 0.7f)),
                 contentAlignment = Alignment.Center
@@ -105,17 +105,17 @@ fun StartScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(60.dp)
+                    .height(48.dp)
             ) {
                 Text(
                     text = "LOGIN",
-                    fontSize = 24.sp,
+                    fontSize = 18.sp,
                     color = JASNY_KREMOWY,
                     fontFamily = KdamThmorPro
                     )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // GET STARTED button
             Button(
@@ -127,11 +127,11 @@ fun StartScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(60.dp)
+                    .height(48.dp)
             ) {
                 Text(
                     text = "GET STARTED",
-                    fontSize = 24.sp,
+                    fontSize = 18.sp,
                     color = BORDOWY,
                     fontFamily = KdamThmorPro
                 )
