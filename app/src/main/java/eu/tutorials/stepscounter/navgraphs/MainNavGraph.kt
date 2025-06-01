@@ -6,13 +6,17 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.FirebaseAuth
 import eu.tutorials.stepscounter.screens.MainScreen
+import eu.tutorials.stepscounter.screens.ProfileScreen
+import eu.tutorials.stepscounter.screens.SummaryScreen
+import eu.tutorials.stepscounter.screens.WorkoutDetailScreen
 import eu.tutorials.stepscounter.screens.settings.SettingsScreen
 import eu.tutorials.stepscounter.screens.settings.SettingsViewModel
-import eu.tutorials.stepscounter.screens.SummaryScreen
-import eu.tutorials.stepscounter.utils.MainScreen
+import eu.tutorials.stepscounter.utils.MainScreen as MainRoutes
 
 @Composable
 fun MainFlowNavGraph(
@@ -21,20 +25,18 @@ fun MainFlowNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = MainScreen.HomeScreen.route
+        startDestination = MainRoutes.HomeScreen.route
     ) {
-        // 1) Home / MainScreen
-        composable(MainScreen.HomeScreen.route) {
+        composable(MainRoutes.HomeScreen.route) {
             MainScreen(
                 settingsViewModel = settingsViewModel,
                 onNavigateToSettings = {
-                    navController.navigate(MainScreen.SettingsScreen.route)
+                    navController.navigate(MainRoutes.SettingsScreen.route)
                 },
                 onNavigateToProfile = {
-                    navController.navigate(MainScreen.ProfileScreen.route)
+                    navController.navigate(MainRoutes.ProfileScreen.route)
                 },
                 onNavigateToSummary = { totalDistance, steps, calories, elapsedTimeMs, pathPoints ->
-                    // stash everything into the savedStateHandle
                     navController.currentBackStackEntry
                         ?.savedStateHandle
                         ?.apply {
@@ -44,58 +46,61 @@ fun MainFlowNavGraph(
                             set("time", elapsedTimeMs)
                             set("path", pathPoints)
                         }
-                    navController.navigate(MainScreen.SummaryScreen.route)
+                    navController.navigate(MainRoutes.SummaryScreen.route)
                 }
             )
         }
 
-        // 2) Profile (stub)
-        composable(MainScreen.ProfileScreen.route) {
-            /* … */
+        composable(MainRoutes.ProfileScreen.route) {
+            ProfileScreen(
+                userEmail = FirebaseAuth.getInstance().currentUser?.email.orEmpty(),
+                onBack = { navController.popBackStack() },
+                onWorkoutClick = { workoutId ->
+                    navController.navigate("workout_detail/$workoutId")
+                }
+            )
         }
 
-        // 3) SummaryScreen: pull the stats out of savedStateHandle
-        composable(MainScreen.SummaryScreen.route) {
-            val handle = navController
-                .previousBackStackEntry
-                ?.savedStateHandle
-            // default to zero / empty if somehow missing
-            val distance    = handle?.get<Double>("distance")    ?: 0.0
-            val steps       = handle?.get<Int>("steps")          ?: 0
-            val calories    = handle?.get<Int>("calories")      ?: 0
-            val timeMs      = handle?.get<Long>("time")         ?: 0L
-            val pathPoints  = handle?.get<List<LatLng>>("path") ?: emptyList()
+        composable(MainRoutes.SummaryScreen.route) {
+            val handle = navController.previousBackStackEntry?.savedStateHandle
+            val distance = handle?.get<Double>("distance") ?: 0.0
+            val steps = handle?.get<Int>("steps") ?: 0
+            val calories = handle?.get<Int>("calories") ?: 0
+            val timeMs = handle?.get<Long>("time") ?: 0L
+            val pathPoints = handle?.get<List<LatLng>>("path") ?: emptyList()
 
-            // get the user's preferred unit from the SettingsViewModel
             val distanceUnit by settingsViewModel.distanceUnit.collectAsState()
 
             SummaryScreen(
-                totalDistance  = distance,
-                distanceUnit   = distanceUnit,
-                calories       = calories,
-                steps          = steps,
-                elapsedTimeMs  = timeMs,
-                pathPoints     = pathPoints
-            ) {
-                // “Done” → back to home
-                navController.popBackStack(
-                    MainScreen.HomeScreen.route,
-                    inclusive = false
-                )
-            }
+                totalDistance = distance,
+                distanceUnit = distanceUnit,
+                calories = calories,
+                steps = steps,
+                elapsedTimeMs = timeMs,
+                pathPoints = pathPoints,
+                onDone = {
+                    navController.popBackStack(MainRoutes.HomeScreen.route, false)
+                }
+            )
         }
 
-        // 4) Settings
-        composable(MainScreen.SettingsScreen.route) {
+        composable(MainRoutes.SettingsScreen.route) {
             SettingsScreen(
                 viewModel = settingsViewModel,
-                onBack = {
-                    navController.popBackStack()
-                },
-                onProfile = {
-                    navController.navigate(MainScreen.ProfileScreen.route)
-                },
-                onAbout = { /*…*/ }
+                onBack = { navController.popBackStack() },
+                onProfile = { navController.navigate(MainRoutes.ProfileScreen.route) },
+                onAbout = { }
+            )
+        }
+
+        composable(
+            route = "workout_detail/{workoutId}",
+            arguments = listOf(navArgument("workoutId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val workoutId = backStackEntry.arguments?.getString("workoutId") ?: return@composable
+            WorkoutDetailScreen(
+                workoutId = workoutId,
+                onBack = { navController.popBackStack() }
             )
         }
     }

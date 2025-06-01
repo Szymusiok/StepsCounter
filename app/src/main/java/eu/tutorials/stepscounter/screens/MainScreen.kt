@@ -32,8 +32,7 @@ import eu.tutorials.stepscounter.viewmodels.TrackingViewModel
 import eu.tutorials.stepscounter.viewmodels.TrackingViewModelFactory
 import eu.tutorials.stepscounter.KdamThmorPro
 
-@RequiresApi(Build.VERSION_CODES.Q)
-@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun MainScreen(
     settingsViewModel: SettingsViewModel,
@@ -53,13 +52,20 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
 
-    val perms = rememberMultiplePermissionsState(
+    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         listOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACTIVITY_RECOGNITION
         )
-    )
+    } else {
+        listOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+    }
+
+    val perms = rememberMultiplePermissionsState(permissions)
     LaunchedEffect(Unit) { perms.launchMultiplePermissionRequest() }
 
     val isTracking by trackingViewModel.isTracking.collectAsState()

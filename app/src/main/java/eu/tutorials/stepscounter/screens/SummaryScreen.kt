@@ -4,20 +4,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
@@ -26,8 +23,11 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
-import eu.tutorials.stepscounter.screens.settings.MountainHeader
+import eu.tutorials.stepscounter.databasehelpers.UserRepository
+import eu.tutorials.stepscounter.model.Workout
 import eu.tutorials.stepscounter.screens.settings.SettingsViewModel.DistanceUnit
+import com.google.firebase.Timestamp
+import eu.tutorials.stepscounter.utils.MountainHeaderFullScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,8 +60,27 @@ fun SummaryScreen(
         String.format("%d:%02d/%s", paceMin, paceRemainder, unitLabel)
     } else "--"
 
+    val userRepo = remember {
+        UserRepository(FirebaseAuth.getInstance(), FirebaseFirestore.getInstance())
+    }
+    val userEmail = FirebaseAuth.getInstance().currentUser?.email
+
+    LaunchedEffect(Unit) {
+        userEmail?.let {
+            val workout = Workout(
+                path = pathPoints,
+                distanceMeters = totalDistance,
+                steps = steps,
+                calories = calories,
+                durationMs = elapsedTimeMs,
+                timestamp = Timestamp.now()
+            )
+            userRepo.saveWorkout(it, workout)
+        }
+    }
+
     Scaffold(
-        containerColor = Color(0xFFFDFBF9),
+        containerColor = Color.Transparent,
         bottomBar = {
             Button(
                 onClick = onDone,
@@ -78,75 +97,79 @@ fun SummaryScreen(
             }
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            MountainHeader()
+        Box(modifier = Modifier.fillMaxSize()) {
+            MountainHeaderFullScreen(modifier = Modifier.matchParentSize())
 
-            Text(
-                text = "Summary",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(horizontal = 24.dp)
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 80.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                Text(
+                    text = "Summary",
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
 
-            if (pathPoints.isNotEmpty()) {
-                val cameraState = rememberCameraPositionState {
-                    position = CameraPosition.fromLatLngZoom(pathPoints.first(), 14f)
+                if (pathPoints.isNotEmpty()) {
+                    val cameraState = rememberCameraPositionState {
+                        position = CameraPosition.fromLatLngZoom(pathPoints.first(), 14f)
+                    }
+
+                    Card(
+                        modifier = Modifier
+                            .padding(horizontal = 24.dp)
+                            .fillMaxWidth()
+                            .aspectRatio(1.3f),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(4.dp)
+                    ) {
+                        GoogleMap(
+                            modifier = Modifier.fillMaxSize(),
+                            cameraPositionState = cameraState,
+                            uiSettings = MapUiSettings(zoomControlsEnabled = false, scrollGesturesEnabled = false),
+                            properties = MapProperties(mapType = MapType.NORMAL)
+                        ) {
+                            if (pathPoints.size > 1) {
+                                Polyline(points = pathPoints, width = 6f)
+                            }
+                            Marker(state = MarkerState(pathPoints.last()))
+                        }
+                    }
                 }
 
                 Card(
                     modifier = Modifier
                         .padding(horizontal = 24.dp)
-                        .fillMaxWidth()
-                        .aspectRatio(1.3f),
+                        .fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
-                    GoogleMap(
-                        modifier = Modifier.fillMaxSize(),
-                        cameraPositionState = cameraState,
-                        uiSettings = MapUiSettings(zoomControlsEnabled = false, scrollGesturesEnabled = false),
-                        properties = MapProperties(mapType = MapType.NORMAL)
-                    ) {
-                        if (pathPoints.size > 1) {
-                            Polyline(points = pathPoints, width = 6f)
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            SummaryItem("Distance", "$distanceText $unitLabel")
+                            SummaryItem("Time", timeText)
                         }
-                        Marker(state = MarkerState(pathPoints.last()))
-                    }
-                }
-            }
-
-            Card(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(4.dp)
-            ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        SummaryItem("Distance", "$distanceText $unitLabel")
-                        SummaryItem("Time", timeText)
-                    }
-                    Spacer(Modifier.height(16.dp))
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        SummaryItem("Calories", "$calories kcal")
-                        SummaryItem("Steps", steps.toString())
-                    }
-                    Divider(Modifier.padding(vertical = 16.dp), color = Color.LightGray)
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Avg. Pace", style = MaterialTheme.typography.labelMedium, color = Color.DarkGray)
-                        Text(avgPace, style = MaterialTheme.typography.headlineSmall, color = Color.Black)
+                        Spacer(Modifier.height(16.dp))
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            SummaryItem("Calories", "$calories kcal")
+                            SummaryItem("Steps", steps.toString())
+                        }
+                        Divider(Modifier.padding(vertical = 16.dp), color = Color.LightGray)
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Avg. Pace", style = MaterialTheme.typography.labelMedium, color = Color.DarkGray)
+                            Text(avgPace, style = MaterialTheme.typography.headlineSmall, color = Color.Black)
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun SummaryItem(label: String, value: String) {
