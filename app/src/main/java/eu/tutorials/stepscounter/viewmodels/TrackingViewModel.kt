@@ -19,19 +19,19 @@ class TrackingViewModel(
 
     private val tracker = LocationTracker(ctx)
 
-    private val _isTracking    = MutableStateFlow(false)
+    internal val _isTracking    = MutableStateFlow(false)
     val isTracking: StateFlow<Boolean> = _isTracking.asStateFlow()
 
-    private val _pathPoints    = MutableStateFlow<List<LatLng>>(emptyList())
+    internal val _pathPoints    = MutableStateFlow<List<LatLng>>(emptyList())
     val pathPoints: StateFlow<List<LatLng>> = _pathPoints.asStateFlow()
 
-    private val _totalDistance = MutableStateFlow(0.0)
+    internal val _totalDistance = MutableStateFlow(0.0)
     val totalDistance: StateFlow<Double> = _totalDistance.asStateFlow()
 
-    private val _calories      = MutableStateFlow(0.0)
+    internal val _calories      = MutableStateFlow(0.0)
     val calories: StateFlow<Double> = _calories.asStateFlow()
 
-    private val _elapsedTime   = MutableStateFlow(0L)
+    internal val _elapsedTime   = MutableStateFlow(0L)
     val elapsedTime: StateFlow<Long> = _elapsedTime.asStateFlow()
 
     private var locationJob: Job? = null

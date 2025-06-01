@@ -3,7 +3,6 @@ package eu.tutorials.stepscounter.screens
 import android.Manifest
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,7 +11,6 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,11 +26,10 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import eu.tutorials.stepscounter.LocationTracker
 import eu.tutorials.stepscounter.screens.settings.SettingsViewModel
-import eu.tutorials.stepscounter.screens.settings.SettingsViewModel.AppTheme
 import eu.tutorials.stepscounter.screens.settings.SettingsViewModel.DistanceUnit
+import eu.tutorials.stepscounter.viewmodels.StepsViewModel
 import eu.tutorials.stepscounter.viewmodels.TrackingViewModel
 import eu.tutorials.stepscounter.viewmodels.TrackingViewModelFactory
-import eu.tutorials.stepscounter.viewmodels.StepsViewModel
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
@@ -74,7 +71,7 @@ fun MainScreen(
 
     val displayDistance = when (distanceUnit) {
         DistanceUnit.KILOMETERS -> rawMeters / 1000.0
-        DistanceUnit.MILES      -> rawMeters / 1609.34
+        DistanceUnit.MILES -> rawMeters / 1609.34
     }
     val unitLabel = if (distanceUnit == DistanceUnit.MILES) "mi" else "km"
 
@@ -84,16 +81,16 @@ fun MainScreen(
 
     val locationTracker = remember { LocationTracker(context) }
     var currentLocation by remember { mutableStateOf<LatLng?>(null) }
+
     LaunchedEffect(perms.allPermissionsGranted) {
         if (perms.allPermissionsGranted) {
             currentLocation = locationTracker.getCurrentLocation()
         }
     }
+
     LaunchedEffect(currentLocation) {
         currentLocation?.let { location ->
-            // Shift the camera slightly north to visually raise the location marker
             val shiftedLatLng = LatLng(location.latitude - 0.005, location.longitude)
-
             cameraState.animate(
                 CameraUpdateFactory.newCameraPosition(
                     CameraPosition.Builder()
@@ -121,17 +118,16 @@ fun MainScreen(
             }
         }
 
-        // Bottom layout stack
+        // Bottom card
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .background(Color(0xFFFDFBF9), shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                 .padding(vertical = 16.dp, horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Start button (above stats)
             Button(
                 onClick = {
                     if (isTracking) {
@@ -148,29 +144,37 @@ fun MainScreen(
                 ),
                 modifier = Modifier
                     .height(56.dp)
-                    .width(160.dp)
+                    .width(180.dp)
             ) {
-                Text(if (isTracking) "Stop" else "Start", style = MaterialTheme.typography.titleLarge)
+                Text(if (isTracking) "Stop" else "Start", style = MaterialTheme.typography.headlineSmall)
             }
 
-            // Stats
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                StatItem("DURATION", formatTime(elapsedMs))
-                StatItem("DISTANCE", String.format("%.2f %s", displayDistance, unitLabel))
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                StatItem("CALORIES", "${calories.toInt()} kcal")
-                StatItem("STEPS", "$steps")
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+                    StatItem("DURATION", formatTime(elapsedMs))
+                    StatItem("DISTANCE", String.format("%.2f %s", displayDistance, unitLabel))
+                }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+                    StatItem("CALORIES", "${calories.toInt()} kcal")
+                    StatItem("STEPS", "$steps")
+                }
             }
 
-            // Bottom nav
+            Divider(
+                color = Color.LightGray,
+                thickness = 1.dp,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+
             Row(
                 Modifier
                     .fillMaxWidth()
                     .padding(top = 12.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 IconTextButton("Profile", Icons.Default.Person, onClick = onNavigateToProfile)
+                VerticalDivider()
                 IconTextButton("Settings", Icons.Default.Settings, onClick = onNavigateToSettings)
             }
         }
@@ -180,8 +184,8 @@ fun MainScreen(
 @Composable
 private fun StatItem(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, style = MaterialTheme.typography.labelSmall, color = Color.DarkGray)
-        Text(value, style = MaterialTheme.typography.titleMedium, color = Color.Black)
+        Text(label, style = MaterialTheme.typography.labelMedium, color = Color.DarkGray)
+        Text(value, style = MaterialTheme.typography.headlineSmall, color = Color.Black)
     }
 }
 
@@ -190,9 +194,19 @@ private fun IconTextButton(text: String, icon: ImageVector, onClick: () -> Unit)
     TextButton(onClick = onClick) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(icon, contentDescription = text, tint = Color.Black)
-            Text(text, color = Color.Black)
+            Text(text, color = Color.Black, style = MaterialTheme.typography.bodyMedium)
         }
     }
+}
+
+@Composable
+private fun VerticalDivider() {
+    Box(
+        modifier = Modifier
+            .width(1.dp)
+            .height(36.dp)
+            .background(Color.LightGray)
+    )
 }
 
 private fun formatTime(ms: Long): String {

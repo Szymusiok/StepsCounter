@@ -205,7 +205,12 @@ fun SettingToggle(title: String, value: Boolean, onToggle: (Boolean) -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(title, style = MaterialTheme.typography.bodyLarge)
-        Switch(checked = value, onCheckedChange = onToggle)
+        Switch(checked = value, onCheckedChange = onToggle,colors = SwitchDefaults.colors(
+            checkedThumbColor = Color.White,
+            checkedTrackColor = Color(0xFFE37028),
+            uncheckedThumbColor = Color.White,
+            uncheckedTrackColor = Color.LightGray
+        ))
     }
 }
 

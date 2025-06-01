@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlin.math.abs
 import kotlin.math.sqrt
 
-class StepsViewModel(private val app: Application) : AndroidViewModel(app), SensorEventListener {
+open class StepsViewModel(private val app: Application) : AndroidViewModel(app), SensorEventListener {
 
     private val sensorManager = app.getSystemService(Application.SENSOR_SERVICE) as SensorManager
 
