@@ -39,7 +39,6 @@ fun SettingsScreen(
     val scope = rememberCoroutineScope()
     val snackHost = remember { SnackbarHostState() }
 
-    val activityRecognitionEnabled by viewModel.activityRecognitionEnabled.collectAsState()
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
     val distanceUnit by viewModel.distanceUnit.collectAsState()
     val appTheme by viewModel.appTheme.collectAsState()
@@ -96,11 +95,6 @@ fun SettingsScreen(
                         .padding(top = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    SettingToggle("Activity Recognition", activityRecognitionEnabled) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            permissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
-                        } else viewModel.setActivityRecognitionEnabled(it)
-                    }
 
                     SettingToggle("Enable Notifications", notificationsEnabled) {
                         viewModel.setNotificationsEnabled(it)
