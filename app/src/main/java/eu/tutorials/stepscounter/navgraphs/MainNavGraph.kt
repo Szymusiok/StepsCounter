@@ -16,6 +16,7 @@ import eu.tutorials.stepscounter.screens.SummaryScreen
 import eu.tutorials.stepscounter.screens.WorkoutDetailScreen
 import eu.tutorials.stepscounter.screens.settings.SettingsScreen
 import eu.tutorials.stepscounter.screens.settings.SettingsViewModel
+import eu.tutorials.stepscounter.utils.Screen
 import eu.tutorials.stepscounter.utils.MainScreen as MainRoutes
 
 @Composable
@@ -88,8 +89,11 @@ fun MainFlowNavGraph(
             SettingsScreen(
                 viewModel = settingsViewModel,
                 onBack = { navController.popBackStack() },
-                onProfile = { navController.navigate(MainRoutes.ProfileScreen.route) },
-                onAbout = { }
+                onLogout = {
+                    navController.navigate(Screen.StartScreen.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
 

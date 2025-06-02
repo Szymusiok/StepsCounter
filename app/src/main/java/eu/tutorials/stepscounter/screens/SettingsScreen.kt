@@ -1,6 +1,7 @@
 package eu.tutorials.stepscounter.screens.settings
 
 import android.Manifest
+import android.content.Intent
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,18 +25,26 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.google.firebase.auth.FirebaseAuth
 import eu.tutorials.stepscounter.KdamThmorPro
+import eu.tutorials.stepscounter.MainActivity
 import eu.tutorials.stepscounter.utils.MountainHeaderFullScreen
 import kotlinx.coroutines.launch
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
-    onProfile: () -> Unit,
-    onAbout: () -> Unit,
+    onLogout: () -> Unit,
     viewModel: SettingsViewModel
 ) {
+    val context = LocalContext.current
+
     val scope = rememberCoroutineScope()
     val snackHost = remember { SnackbarHostState() }
 
@@ -43,6 +52,8 @@ fun SettingsScreen(
     val distanceUnit by viewModel.distanceUnit.collectAsState()
     val appTheme by viewModel.appTheme.collectAsState()
     val sensorType by viewModel.sensorType.collectAsState()
+
+    var shouldLogout by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -53,6 +64,15 @@ fun SettingsScreen(
             }
         }
     )
+
+    if (shouldLogout) {
+        LaunchedEffect(Unit) {
+            val intent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            context.startActivity(intent)
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.sensorError.collect {
@@ -150,11 +170,17 @@ fun SettingsScreen(
                         textColor = textColor
                     )
 
-                    TextButton(
-                        onClick = onAbout,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    Button(
+                        onClick = {
+                            FirebaseAuth.getInstance().signOut()
+                            shouldLogout = true
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                     ) {
-                        Text("About", color = accent, textAlign = TextAlign.Center, fontFamily = KdamThmorPro)
+                        Text("LOGOUT", color = MaterialTheme.colorScheme.onError)
                     }
 
                     Spacer(Modifier.height(32.dp))
