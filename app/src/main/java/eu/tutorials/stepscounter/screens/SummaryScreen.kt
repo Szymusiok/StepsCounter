@@ -27,6 +27,7 @@ import eu.tutorials.stepscounter.databasehelpers.UserRepository
 import eu.tutorials.stepscounter.model.Workout
 import eu.tutorials.stepscounter.screens.settings.SettingsViewModel.DistanceUnit
 import com.google.firebase.Timestamp
+import eu.tutorials.stepscounter.KdamThmorPro
 import eu.tutorials.stepscounter.utils.MountainHeaderFullScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,14 +107,19 @@ fun SummaryScreen(
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
                     .padding(bottom = 80.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.Bottom
             ) {
+                Spacer(modifier = Modifier.weight(1f)) // Push content to bottom
+
+                // Title
                 Text(
                     text = "Summary",
                     style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.padding(horizontal = 24.dp)
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    fontFamily = KdamThmorPro
                 )
-
+                Spacer(Modifier.height(16.dp))
+                // Map
                 if (pathPoints.isNotEmpty()) {
                     val cameraState = rememberCameraPositionState {
                         position = CameraPosition.fromLatLngZoom(pathPoints.first(), 14f)
@@ -140,7 +146,8 @@ fun SummaryScreen(
                         }
                     }
                 }
-
+                Spacer(Modifier.height(16.dp))
+                // Stats
                 Card(
                     modifier = Modifier
                         .padding(horizontal = 24.dp)
