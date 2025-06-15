@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import eu.tutorials.stepscounter.utils.MountainHeaderFullScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import eu.tutorials.stepscounter.KdamThmorPro
+import eu.tutorials.stepscounter.ui.theme.KdamThmorPro
 import eu.tutorials.stepscounter.databasehelpers.Result
 import eu.tutorials.stepscounter.databasehelpers.User
 import eu.tutorials.stepscounter.databasehelpers.UserRepository

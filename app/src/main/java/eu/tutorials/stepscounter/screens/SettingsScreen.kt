@@ -33,7 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
-import eu.tutorials.stepscounter.KdamThmorPro
+import eu.tutorials.stepscounter.ui.theme.KdamThmorPro
 import eu.tutorials.stepscounter.MainActivity
 import eu.tutorials.stepscounter.utils.MountainHeaderFullScreen
 import kotlinx.coroutines.launch

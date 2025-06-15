@@ -28,7 +28,7 @@ import eu.tutorials.stepscounter.viewmodels.SettingsViewModel
 import eu.tutorials.stepscounter.viewmodels.SettingsViewModel.DistanceUnit
 import eu.tutorials.stepscounter.viewmodels.TrackingViewModel
 import eu.tutorials.stepscounter.viewmodels.TrackingViewModelFactory
-import eu.tutorials.stepscounter.KdamThmorPro
+import eu.tutorials.stepscounter.ui.theme.KdamThmorPro
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable

@@ -16,13 +16,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import eu.tutorials.stepscounter.KdamThmorPro
+import eu.tutorials.stepscounter.ui.theme.KdamThmorPro
 import eu.tutorials.stepscounter.databasehelpers.Result
 import eu.tutorials.stepscounter.ui.theme.BORDOWY
 import eu.tutorials.stepscounter.ui.theme.JASNY_KREMOWY
 import eu.tutorials.stepscounter.viewmodels.AuthViewModel
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     authViewModel: AuthViewModel,
@@ -146,7 +147,7 @@ private fun LoginCard(
                 trailingIcon = {
                     IconButton(onClick = onTogglePasswordVisibility) {
                         Icon(
-                            imageVector = if (passwordVisible) Icons.Default.Info else Icons.Default.Lock,
+                            imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                             contentDescription = "Toggle Password Visibility",
                             tint = BORDOWY
                         )
@@ -161,6 +162,7 @@ private fun LoginCard(
 
             Button(
                 onClick = onLogin,
+                enabled = email.isNotBlank() && password.isNotBlank(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp),

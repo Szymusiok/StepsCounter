@@ -18,7 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import eu.tutorials.stepscounter.KdamThmorPro
+import eu.tutorials.stepscounter.ui.theme.KdamThmorPro
 import eu.tutorials.stepscounter.R
 import eu.tutorials.stepscounter.ui.theme.BORDOWY
 import eu.tutorials.stepscounter.ui.theme.JASNY_KREMOWY

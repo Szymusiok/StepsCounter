@@ -31,7 +31,7 @@ import eu.tutorials.stepscounter.databasehelpers.UserRepository
 import eu.tutorials.stepscounter.model.Workout
 import eu.tutorials.stepscounter.viewmodels.SettingsViewModel.DistanceUnit
 import com.google.firebase.Timestamp
-import eu.tutorials.stepscounter.KdamThmorPro
+import eu.tutorials.stepscounter.ui.theme.KdamThmorPro
 import eu.tutorials.stepscounter.databasehelpers.AppDatabase
 import eu.tutorials.stepscounter.utils.MountainHeaderFullScreen
 import java.io.File

@@ -21,7 +21,7 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.android.compose.*
-import eu.tutorials.stepscounter.KdamThmorPro
+import eu.tutorials.stepscounter.ui.theme.KdamThmorPro
 import eu.tutorials.stepscounter.databasehelpers.UserRepository
 import eu.tutorials.stepscounter.databasehelpers.AppDatabase
 import eu.tutorials.stepscounter.model.Workout

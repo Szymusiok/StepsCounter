@@ -17,11 +17,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import eu.tutorials.stepscounter.KdamThmorPro
+import eu.tutorials.stepscounter.ui.theme.KdamThmorPro
 import eu.tutorials.stepscounter.databasehelpers.Result
 import eu.tutorials.stepscounter.ui.theme.BORDOWY
 import eu.tutorials.stepscounter.ui.theme.JASNY_KREMOWY
 import eu.tutorials.stepscounter.viewmodels.AuthViewModel
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 
 @Composable
 fun SignUpScreen(
@@ -61,10 +63,6 @@ fun SignUpScreen(
             onTogglePasswordVisibility = { passwordVisible = !passwordVisible },
             onSignUp = {
                 authViewModel.signUp(email, password, firstName, lastName)
-                email = ""
-                password = ""
-                firstName = ""
-                lastName = ""
             },
             onNavigateToLogin = onNavigateToLogin
         )
@@ -167,6 +165,7 @@ private fun SignUpCard(
 
             Button(
                 onClick = onSignUp,
+                enabled = email.isNotBlank() && password.isNotBlank() && firstName.isNotBlank() && lastName.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(containerColor = BORDOWY),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -203,7 +202,7 @@ private fun AuthField(
         leadingIcon = { Icon(icon, contentDescription = null, tint = BORDOWY) },
         trailingIcon = if (isPassword && onToggleVisibility != null) {
             {
-                val toggleIcon = if (passwordVisible) Icons.Default.Info else Icons.Default.Lock
+                val toggleIcon = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
                 IconButton(onClick = onToggleVisibility) {
                     Icon(toggleIcon, contentDescription = null, tint = BORDOWY)
                 }

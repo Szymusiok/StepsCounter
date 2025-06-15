@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer.v100)
     implementation(libs.androidx.media3.ui.v100)
     implementation(libs.androidx.animation.core.lint)
+    implementation(libs.androidx.material.icons.extended)
 
     implementation (libs.gms.play.services.maps.v1810)
     implementation (libs.maps.compose)

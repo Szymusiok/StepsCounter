@@ -7,9 +7,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import eu.tutorials.stepscounter.navgraphs.StartNavigationGraph
@@ -17,10 +14,6 @@ import eu.tutorials.stepscounter.navgraphs.isAuthRoute
 import eu.tutorials.stepscounter.viewmodels.SettingsViewModel
 import eu.tutorials.stepscounter.utils.AuthVideoBackground
 import eu.tutorials.stepscounter.viewmodels.AuthViewModel
-
-val KdamThmorPro = FontFamily(
-    Font(R.font.kdam_thmor_pro, FontWeight.Normal)
-)
 
 @Composable
 fun AuthContainer(
