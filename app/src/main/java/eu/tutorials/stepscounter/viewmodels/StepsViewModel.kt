@@ -37,6 +37,7 @@ open class StepsViewModel(private val app: Application) : AndroidViewModel(app),
 
     private var isUsingStepSensor = false
     private var isTracking = false
+    private var sensorTypeCached: SettingsViewModel.SensorType? = null
 
     fun startTracking() {
         if (isTracking) return
@@ -45,6 +46,7 @@ open class StepsViewModel(private val app: Application) : AndroidViewModel(app),
         val sensorType = SettingsViewModel.SensorType.valueOf(
             app.getSharedPreferences("user_settings", 0).getString("sensor_type", SettingsViewModel.SensorType.STEP_SENSOR.name)!!
         )
+        sensorTypeCached = sensorType
 
         if (sensorType == SettingsViewModel.SensorType.STEP_SENSOR) {
             stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
@@ -69,6 +71,33 @@ open class StepsViewModel(private val app: Application) : AndroidViewModel(app),
         if (!isTracking) return
         sensorManager.unregisterListener(this)
         isTracking = false
+    }
+
+    fun resumeTracking() {
+        if (isTracking) return
+
+        val sensorType = sensorTypeCached ?: SettingsViewModel.SensorType.valueOf(
+            app.getSharedPreferences("user_settings", 0).getString("sensor_type", SettingsViewModel.SensorType.STEP_SENSOR.name)!!
+        )
+        sensorTypeCached = sensorType
+
+        if (sensorType == SettingsViewModel.SensorType.STEP_SENSOR) {
+            stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+            if (stepSensor != null) {
+                isUsingStepSensor = true
+                sensorManager.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_NORMAL)
+            }
+        }
+
+        if (!isUsingStepSensor) {
+            accelSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+            accelSensor?.let {
+                isUsingStepSensor = false
+                sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME)
+            }
+        }
+
+        isTracking = true
     }
 
     override fun onSensorChanged(event: SensorEvent) {

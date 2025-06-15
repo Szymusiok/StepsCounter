@@ -2,10 +2,8 @@ package eu.tutorials.stepscounter.screens.settings
 
 import android.Manifest
 import android.content.Intent
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,14 +12,28 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -30,11 +42,6 @@ import eu.tutorials.stepscounter.KdamThmorPro
 import eu.tutorials.stepscounter.MainActivity
 import eu.tutorials.stepscounter.utils.MountainHeaderFullScreen
 import kotlinx.coroutines.launch
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,6 +59,7 @@ fun SettingsScreen(
     val distanceUnit by viewModel.distanceUnit.collectAsState()
     val appTheme by viewModel.appTheme.collectAsState()
     val sensorType by viewModel.sensorType.collectAsState()
+    val stepGoal by viewModel.stepGoal.collectAsState()
 
     var shouldLogout by remember { mutableStateOf(false) }
 
@@ -145,6 +153,16 @@ fun SettingsScreen(
                         },
                         accent = accent,
                         controlColor = surface,
+                        textColor = textColor
+                    )
+
+                    SettingSlider(
+                        title = "Daily Step Goal",
+                        value = stepGoal.toFloat(),
+                        onValueChange = { viewModel.setStepGoal(it.toInt()) },
+                        valueRange = 1000f..20000f,
+                        steps = 18,
+                        accent = accent,
                         textColor = textColor
                     )
 
@@ -271,6 +289,38 @@ fun SettingSegment(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun SettingSlider(
+    title: String,
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    valueRange: ClosedFloatingPointRange<Float>,
+    steps: Int,
+    accent: Color,
+    textColor: Color
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(title, style = MaterialTheme.typography.bodyLarge, color = textColor, fontFamily = KdamThmorPro)
+            Text(value.toInt().toString(), style = MaterialTheme.typography.bodyMedium, color = textColor, fontFamily = KdamThmorPro)
+        }
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            valueRange = valueRange,
+            steps = steps,
+            colors = SliderDefaults.colors(
+                thumbColor = accent,
+                activeTrackColor = accent
+            )
+        )
     }
 }
 

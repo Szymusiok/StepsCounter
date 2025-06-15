@@ -69,6 +69,7 @@ fun MainScreen(
     LaunchedEffect(Unit) { perms.launchMultiplePermissionRequest() }
 
     val isTracking by trackingViewModel.isTracking.collectAsState()
+    val isPaused by trackingViewModel.isPaused.collectAsState()
     val pathPoints by trackingViewModel.pathPoints.collectAsState()
     val rawMeters by trackingViewModel.totalDistance.collectAsState(initial = 0.0)
     val calories by trackingViewModel.calories.collectAsState(initial = 0.0)
@@ -152,33 +153,70 @@ fun MainScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Button(
-                onClick = {
-                    if (isTracking) {
-                        if (!hasFirstLocation) return@Button // <- BLOCK premature stop
-                        trackingViewModel.stopTracking()
-                        onNavigateToSummary(rawMeters, steps, calories.toInt(), elapsedMs, pathPoints)
-                    } else {
-                        trackingViewModel.startTracking()
+            if (!isTracking) {
+                Button(
+                    onClick = { trackingViewModel.startTracking() },
+                    enabled = currentLocation != null,
+                    shape = RoundedCornerShape(30.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE37028),
+                        contentColor = Color.White,
+                        disabledContainerColor = Color(0xFFE37028).copy(alpha = 0.4f),
+                        disabledContentColor = Color.White.copy(alpha = 0.7f)
+                    ),
+                    modifier = Modifier
+                        .height(56.dp)
+                        .width(180.dp)
+                ) {
+                    Text(
+                        "Start",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontFamily = KdamThmorPro
+                    )
+                }
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Button(
+                        onClick = {
+                            if (isPaused) trackingViewModel.resumeTracking() else trackingViewModel.pauseTracking()
+                        },
+                        shape = RoundedCornerShape(30.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE37028),
+                            contentColor = Color.White
+                        ),
+                        modifier = Modifier
+                            .height(56.dp)
+                            .width(120.dp)
+                    ) {
+                        Text(
+                            if (isPaused) "Resume" else "Pause",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontFamily = KdamThmorPro
+                        )
                     }
-                },
-                enabled = currentLocation != null || isTracking, // allow start after GPS; stop always enabled
-                shape = RoundedCornerShape(30.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFE37028),
-                    contentColor = Color.White,
-                    disabledContainerColor = Color(0xFFE37028).copy(alpha = 0.4f),
-                    disabledContentColor = Color.White.copy(alpha = 0.7f)
-                ),
-                modifier = Modifier
-                    .height(56.dp)
-                    .width(180.dp)
-            ) {
-                Text(
-                    if (isTracking) "Stop" else "Start",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontFamily = KdamThmorPro
-                )
+                    Button(
+                        onClick = {
+                            if (!hasFirstLocation) return@Button
+                            trackingViewModel.stopTracking()
+                            onNavigateToSummary(rawMeters, steps, calories.toInt(), elapsedMs, pathPoints)
+                        },
+                        shape = RoundedCornerShape(30.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE37028),
+                            contentColor = Color.White
+                        ),
+                        modifier = Modifier
+                            .height(56.dp)
+                            .width(120.dp)
+                    ) {
+                        Text(
+                            "Stop",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontFamily = KdamThmorPro
+                        )
+                    }
+                }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
