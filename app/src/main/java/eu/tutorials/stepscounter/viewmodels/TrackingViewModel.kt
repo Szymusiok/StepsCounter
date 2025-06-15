@@ -37,8 +37,22 @@ class TrackingViewModel(
     private val _elapsedTime   = MutableStateFlow(0L)
     val elapsedTime: StateFlow<Long> = _elapsedTime.asStateFlow()
 
+    private val _speed         = MutableStateFlow(0.0)
+    val speed: StateFlow<Double> = _speed.asStateFlow()
+
+    private val _pace          = MutableStateFlow(0.0)
+    val pace: StateFlow<Double> = _pace.asStateFlow()
+
     private var locationJob: Job? = null
     private var timerJob:    Job? = null
+
+    private fun updateMetrics() {
+        val hours = _elapsedTime.value / 3_600_000.0
+        _speed.value = if (hours > 0) (_totalDistance.value / 1000.0) / hours else 0.0
+
+        val distKm = _totalDistance.value / 1000.0
+        _pace.value = if (distKm > 0) (_elapsedTime.value / 60_000.0) / distKm else 0.0
+    }
 
     private fun startTimer() {
         timerJob?.cancel()
@@ -46,6 +60,7 @@ class TrackingViewModel(
             while (_isTracking.value && !_isPaused.value) {
                 delay(1000L)
                 _elapsedTime.update { it + 1000L }
+                updateMetrics()
             }
         }
     }
@@ -65,6 +80,7 @@ class TrackingViewModel(
                 }
 
                 _calories.value = (_totalDistance.value / 1000.0) * 60.0
+                updateMetrics()
             }
         }
     }
@@ -82,6 +98,9 @@ class TrackingViewModel(
             _pathPoints.value    = listOf(startPoint)
             _totalDistance.value = 0.0
             _calories.value      = 0.0
+            _speed.value = 0.0
+            _pace.value = 0.0
+            _isPaused.value = false
             _elapsedTime.value   = 0L
             _isTracking.value    = true
 
@@ -111,8 +130,11 @@ class TrackingViewModel(
     fun stopTracking() {
         if (!_isTracking.value) return
         _isTracking.value = false
+        _isPaused.value = false
         timerJob?.cancel()
         locationJob?.cancel()
+        _speed.value = 0.0
+        _pace.value = 0.0
         stepsViewModel.stopTracking()
     }
 }

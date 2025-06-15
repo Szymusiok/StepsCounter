@@ -76,6 +76,8 @@ fun MainScreen(
     val elapsedMs by trackingViewModel.elapsedTime.collectAsState(initial = 0L)
     val steps by stepsViewModel.steps.collectAsState(initial = 0)
     val distanceUnit by settingsViewModel.distanceUnit.collectAsState()
+    val speed by trackingViewModel.speed.collectAsState()
+    val pace by trackingViewModel.pace.collectAsState()
 
     val hasFirstLocation = pathPoints.isNotEmpty()
 
@@ -84,6 +86,21 @@ fun MainScreen(
         DistanceUnit.MILES -> rawMeters / 1609.34
     }
     val unitLabel = if (distanceUnit == DistanceUnit.MILES) "mi" else "km"
+
+    val speedDisplay = when (distanceUnit) {
+        DistanceUnit.KILOMETERS -> speed
+        DistanceUnit.MILES -> speed * 0.621371
+    }
+    val speedText = if (speedDisplay > 0)
+        String.format("%.1f %s", speedDisplay, if (distanceUnit == DistanceUnit.MILES) "mph" else "km/h")
+    else "--"
+
+    val pacePerUnit = if (distanceUnit == DistanceUnit.KILOMETERS) pace else pace * 1.60934
+    val paceMin = pacePerUnit.toInt()
+    val paceSec = ((pacePerUnit - paceMin) * 60).toInt()
+    val paceText = if (pacePerUnit > 0)
+        String.format("%d:%02d / %s", paceMin, paceSec, unitLabel)
+    else "--"
 
     val cameraState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(0.0, 0.0), 1f)
@@ -190,11 +207,8 @@ fun MainScreen(
                             .width(120.dp)
                     ) {
                         Text(
-                            text = if (isPaused) "Resume" else "Pause",
-                            style = if (isPaused)
-                                MaterialTheme.typography.bodyMedium
-                            else
-                                MaterialTheme.typography.headlineSmall,
+                            if (isPaused) "Resume" else "Pause",
+                            style = MaterialTheme.typography.headlineSmall,
                             fontFamily = KdamThmorPro
                         )
                     }
@@ -230,6 +244,10 @@ fun MainScreen(
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
                     StatItem("CALORIES", "${calories.toInt()} kcal")
                     StatItem("STEPS", "$steps")
+                }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+                    StatItem("SPEED", speedText)
+                    StatItem("PACE", paceText)
                 }
             }
 

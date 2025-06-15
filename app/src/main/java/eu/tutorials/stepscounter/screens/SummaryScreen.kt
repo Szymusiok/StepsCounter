@@ -1,5 +1,8 @@
 package eu.tutorials.stepscounter.screens
 
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,7 +13,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
@@ -29,6 +35,8 @@ import eu.tutorials.stepscounter.screens.settings.SettingsViewModel.DistanceUnit
 import com.google.firebase.Timestamp
 import eu.tutorials.stepscounter.KdamThmorPro
 import eu.tutorials.stepscounter.utils.MountainHeaderFullScreen
+import java.io.File
+import java.io.FileOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,6 +69,13 @@ fun SummaryScreen(
         String.format("%d:%02d/%s", paceMin, paceRemainder, unitLabel)
     } else "--"
 
+    val avgSpeed = if (elapsedTimeMs > 0) {
+        val hours = elapsedTimeMs / 3_600_000.0
+        val speedKmH = totalDistance / 1000.0 / hours
+        val display = if (distanceUnit == DistanceUnit.MILES) speedKmH * 0.621371 else speedKmH
+        String.format("%.1f %s", display, if (distanceUnit == DistanceUnit.MILES) "mph" else "km/h")
+    } else "--"
+
     val userRepo = remember {
         UserRepository(FirebaseAuth.getInstance(), FirebaseFirestore.getInstance())
     }
@@ -80,21 +95,55 @@ fun SummaryScreen(
         }
     }
 
+    val context = LocalContext.current
+    val view = LocalView.current
+
+    fun shareSummary() {
+        val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        view.draw(canvas)
+
+        val cachePath = File(context.cacheDir, "share").apply { mkdirs() }
+        val file = File(cachePath, "summary.png")
+        FileOutputStream(file).use { out -> bitmap.compress(Bitmap.CompressFormat.PNG, 100, out) }
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "image/png"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(intent, "Share summary"))
+    }
+
     Scaffold(
         containerColor = Color.Transparent,
         bottomBar = {
-            Button(
-                onClick = onDone,
-                modifier = Modifier
+            Row(
+                Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFE37028),
-                    contentColor = Color.White
-                )
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text("Done", style = MaterialTheme.typography.titleMedium)
+                Button(
+                    onClick = { shareSummary() },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE37028),
+                        contentColor = Color.White
+                    )
+                ) { Text("Share", style = MaterialTheme.typography.titleMedium) }
+
+                Button(
+                    onClick = onDone,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE37028),
+                        contentColor = Color.White
+                    )
+                ) { Text("Done", style = MaterialTheme.typography.titleMedium) }
             }
         }
     ) { innerPadding ->
@@ -167,8 +216,8 @@ fun SummaryScreen(
                         }
                         Divider(Modifier.padding(vertical = 16.dp), color = Color.LightGray)
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Avg. Pace", style = MaterialTheme.typography.labelMedium, color = Color.DarkGray)
-                            Text(avgPace, style = MaterialTheme.typography.headlineSmall, color = Color.Black)
+                            SummaryItem("Avg. Pace", avgPace)
+                            SummaryItem("Avg. Speed", avgSpeed)
                         }
                     }
                 }
