@@ -2,7 +2,6 @@ package eu.tutorials.stepscounter.screens
 
 import android.Manifest
 import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,9 +24,8 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import eu.tutorials.stepscounter.LocationTracker
-import eu.tutorials.stepscounter.screens.settings.SettingsViewModel
-import eu.tutorials.stepscounter.screens.settings.SettingsViewModel.DistanceUnit
-import eu.tutorials.stepscounter.viewmodels.StepsViewModel
+import eu.tutorials.stepscounter.viewmodels.SettingsViewModel
+import eu.tutorials.stepscounter.viewmodels.SettingsViewModel.DistanceUnit
 import eu.tutorials.stepscounter.viewmodels.TrackingViewModel
 import eu.tutorials.stepscounter.viewmodels.TrackingViewModelFactory
 import eu.tutorials.stepscounter.KdamThmorPro
@@ -36,9 +34,8 @@ import eu.tutorials.stepscounter.KdamThmorPro
 @Composable
 fun MainScreen(
     settingsViewModel: SettingsViewModel,
-    stepsViewModel: StepsViewModel = viewModel(),
     trackingViewModel: TrackingViewModel = viewModel(
-        factory = TrackingViewModelFactory(LocalContext.current, stepsViewModel)
+        factory = TrackingViewModelFactory(LocalContext.current)
     ),
     onNavigateToSettings: () -> Unit,
     onNavigateToProfile: () -> Unit,
@@ -74,7 +71,7 @@ fun MainScreen(
     val rawMeters by trackingViewModel.totalDistance.collectAsState(initial = 0.0)
     val calories by trackingViewModel.calories.collectAsState(initial = 0.0)
     val elapsedMs by trackingViewModel.elapsedTime.collectAsState(initial = 0L)
-    val steps by stepsViewModel.steps.collectAsState(initial = 0)
+    val steps by trackingViewModel.steps.collectAsState(initial = 0)
     val distanceUnit by settingsViewModel.distanceUnit.collectAsState()
     val speed by trackingViewModel.speed.collectAsState()
     val pace by trackingViewModel.pace.collectAsState()

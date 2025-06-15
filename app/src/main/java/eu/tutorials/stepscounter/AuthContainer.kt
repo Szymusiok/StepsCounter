@@ -14,7 +14,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import eu.tutorials.stepscounter.navgraphs.StartNavigationGraph
 import eu.tutorials.stepscounter.navgraphs.isAuthRoute
-import eu.tutorials.stepscounter.screens.settings.SettingsViewModel
+import eu.tutorials.stepscounter.viewmodels.SettingsViewModel
 import eu.tutorials.stepscounter.utils.AuthVideoBackground
 import eu.tutorials.stepscounter.viewmodels.AuthViewModel
 

@@ -13,8 +13,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.google.android.gms.maps.model.CameraPosition
@@ -31,12 +29,15 @@ import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import eu.tutorials.stepscounter.databasehelpers.UserRepository
 import eu.tutorials.stepscounter.model.Workout
-import eu.tutorials.stepscounter.screens.settings.SettingsViewModel.DistanceUnit
+import eu.tutorials.stepscounter.viewmodels.SettingsViewModel.DistanceUnit
 import com.google.firebase.Timestamp
 import eu.tutorials.stepscounter.KdamThmorPro
+import eu.tutorials.stepscounter.databasehelpers.AppDatabase
 import eu.tutorials.stepscounter.utils.MountainHeaderFullScreen
 import java.io.File
 import java.io.FileOutputStream
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,8 +77,13 @@ fun SummaryScreen(
         String.format("%.1f %s", display, if (distanceUnit == DistanceUnit.MILES) "mph" else "km/h")
     } else "--"
 
+    val context = LocalContext.current
     val userRepo = remember {
-        UserRepository(FirebaseAuth.getInstance(), FirebaseFirestore.getInstance())
+        UserRepository(
+            FirebaseAuth.getInstance(),
+            FirebaseFirestore.getInstance(),
+            AppDatabase.getInstance(context)
+        )
     }
     val userEmail = FirebaseAuth.getInstance().currentUser?.email
 
@@ -95,7 +101,6 @@ fun SummaryScreen(
         }
     }
 
-    val context = LocalContext.current
     val view = LocalView.current
 
     fun shareSummary() {

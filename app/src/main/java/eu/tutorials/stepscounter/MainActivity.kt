@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
-import eu.tutorials.stepscounter.screens.settings.SettingsViewModel
+import eu.tutorials.stepscounter.viewmodels.SettingsViewModel
 import eu.tutorials.stepscounter.ui.theme.StepsCounterTheme
 import eu.tutorials.stepscounter.viewmodels.AuthViewModel
 import androidx.core.view.WindowInsetsCompat

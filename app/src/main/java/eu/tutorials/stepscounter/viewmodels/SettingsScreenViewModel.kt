@@ -1,4 +1,4 @@
-package eu.tutorials.stepscounter.screens.settings
+package eu.tutorials.stepscounter.viewmodels
 
 import android.app.Application
 import android.content.Context

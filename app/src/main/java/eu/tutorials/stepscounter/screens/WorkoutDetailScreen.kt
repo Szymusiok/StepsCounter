@@ -1,7 +1,6 @@
 package eu.tutorials.stepscounter.screens
 
 import android.icu.text.SimpleDateFormat
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import eu.tutorials.stepscounter.utils.MountainHeaderFullScreen
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.android.gms.maps.model.CameraPosition
@@ -23,17 +23,24 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.android.compose.*
 import eu.tutorials.stepscounter.KdamThmorPro
 import eu.tutorials.stepscounter.databasehelpers.UserRepository
+import eu.tutorials.stepscounter.databasehelpers.AppDatabase
 import eu.tutorials.stepscounter.model.Workout
 import java.util.*
 
 @Composable
 fun WorkoutDetailScreen(
     workoutId: String,
-    userRepository: UserRepository = remember {
-        UserRepository(FirebaseAuth.getInstance(), FirebaseFirestore.getInstance())
-    },
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    val userRepository = remember {
+        UserRepository(
+            FirebaseAuth.getInstance(),
+            FirebaseFirestore.getInstance(),
+            AppDatabase.getInstance(context)
+        )
+    }
+
     var workout by remember { mutableStateOf<Workout?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 

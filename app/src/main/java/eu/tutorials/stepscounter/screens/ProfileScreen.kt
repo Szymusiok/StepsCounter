@@ -1,7 +1,6 @@
 package eu.tutorials.stepscounter.screens
 
 import android.icu.text.SimpleDateFormat
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,20 +21,28 @@ import eu.tutorials.stepscounter.databasehelpers.Result
 import eu.tutorials.stepscounter.databasehelpers.User
 import eu.tutorials.stepscounter.databasehelpers.UserRepository
 import eu.tutorials.stepscounter.model.Workout
-import eu.tutorials.stepscounter.screens.settings.SettingsViewModel
 import java.util.*
+import androidx.compose.ui.platform.LocalContext
+import eu.tutorials.stepscounter.databasehelpers.AppDatabase
+import eu.tutorials.stepscounter.viewmodels.SettingsViewModel
 
 @Composable
 fun ProfileScreen(
     userEmail: String,
     settingsViewModel: SettingsViewModel,
-    userRepository: UserRepository = remember {
-        UserRepository(FirebaseAuth.getInstance(), FirebaseFirestore.getInstance())
-    },
     modifier: Modifier = Modifier,
     onBack: () -> Unit,
     onWorkoutClick: (String) -> Unit
 ) {
+    val context = LocalContext.current
+    val userRepository = remember {
+        UserRepository(
+            FirebaseAuth.getInstance(),
+            FirebaseFirestore.getInstance(),
+            AppDatabase.getInstance(context)
+        )
+    }
+
     var user by remember { mutableStateOf<User?>(null) }
     var workouts by remember { mutableStateOf<List<Workout>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }

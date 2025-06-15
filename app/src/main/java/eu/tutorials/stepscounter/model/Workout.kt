@@ -2,6 +2,9 @@ package eu.tutorials.stepscounter.model
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
+import eu.tutorials.stepscounter.databasehelpers.WorkoutEntity
+import java.util.Date
+import java.util.UUID
 
 data class Workout(
     val id: String = "",
@@ -22,3 +25,23 @@ fun List<Map<String, Double>>.toLatLngList(): List<LatLng> =
         val lng = map["lng"]
         if (lat != null && lng != null) LatLng(lat, lng) else null
     }
+
+fun Workout.toEntity(): WorkoutEntity = WorkoutEntity(
+    id = if (id.isNotEmpty()) id else UUID.randomUUID().toString(),
+    path = path,
+    distanceMeters = distanceMeters,
+    steps = steps,
+    calories = calories,
+    durationMs = durationMs,
+    timestamp = timestamp.toDate().time
+)
+
+fun WorkoutEntity.toModel(): Workout = Workout(
+    id = id,
+    path = path,
+    distanceMeters = distanceMeters,
+    steps = steps,
+    calories = calories,
+    durationMs = durationMs,
+    timestamp = Timestamp(Date(timestamp))
+)

@@ -1,4 +1,4 @@
-package eu.tutorials.stepscounter.screens.settings
+package eu.tutorials.stepscounter.screens
 
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -30,7 +30,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
@@ -39,6 +38,7 @@ import eu.tutorials.stepscounter.MainActivity
 import eu.tutorials.stepscounter.utils.MountainHeaderFullScreen
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
+import eu.tutorials.stepscounter.viewmodels.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
