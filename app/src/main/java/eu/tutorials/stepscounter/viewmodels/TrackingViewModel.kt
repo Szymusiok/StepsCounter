@@ -22,6 +22,9 @@ class TrackingViewModel(
     private val _isTracking    = MutableStateFlow(false)
     val isTracking: StateFlow<Boolean> = _isTracking.asStateFlow()
 
+    private val _isPaused = MutableStateFlow(false)
+    val isPaused: StateFlow<Boolean> = _isPaused.asStateFlow()
+
     private val _pathPoints    = MutableStateFlow<List<LatLng>>(emptyList())
     val pathPoints: StateFlow<List<LatLng>> = _pathPoints.asStateFlow()
 
@@ -36,6 +39,35 @@ class TrackingViewModel(
 
     private var locationJob: Job? = null
     private var timerJob:    Job? = null
+
+    private fun startTimer() {
+        timerJob?.cancel()
+        timerJob = viewModelScope.launch {
+            while (_isTracking.value && !_isPaused.value) {
+                delay(1000L)
+                _elapsedTime.update { it + 1000L }
+            }
+        }
+    }
+
+    private fun startLocationUpdates() {
+        locationJob?.cancel()
+        locationJob = viewModelScope.launch {
+            tracker.locationUpdates().collect { newPoint ->
+                if (_isPaused.value || !_isTracking.value) return@collect
+
+                val prev = _pathPoints.value.lastOrNull()
+                _pathPoints.update { old -> old + newPoint }
+
+                prev?.let {
+                    val delta = SphericalUtil.computeDistanceBetween(it, newPoint)
+                    _totalDistance.update { old -> old + delta }
+                }
+
+                _calories.value = (_totalDistance.value / 1000.0) * 60.0
+            }
+        }
+    }
 
     fun startTracking() {
         if (_isTracking.value) return
@@ -53,31 +85,27 @@ class TrackingViewModel(
             _elapsedTime.value   = 0L
             _isTracking.value    = true
 
-            // start timer
-            timerJob = launch {
-                while (_isTracking.value) {
-                    delay(1000L)
-                    _elapsedTime.update { it + 1000L }
-                }
-            }
-
-            // start collecting live updates
-            locationJob = launch {
-                tracker.locationUpdates().collect { newPoint ->
-                    val prev = _pathPoints.value.lastOrNull()
-                    _pathPoints.update { old -> old + newPoint }
-
-                    prev?.let {
-                        val delta = SphericalUtil.computeDistanceBetween(it, newPoint)
-                        _totalDistance.update { old -> old + delta }
-                    }
-
-                    _calories.value = (_totalDistance.value / 1000.0) * 60.0
-                }
-            }
+            startTimer()
+            startLocationUpdates()
 
             stepsViewModel.startTracking()
         }
+    }
+
+    fun pauseTracking() {
+        if (!_isTracking.value || _isPaused.value) return
+        _isPaused.value = true
+        timerJob?.cancel()
+        locationJob?.cancel()
+        stepsViewModel.stopTracking()
+    }
+
+    fun resumeTracking() {
+        if (!_isTracking.value || !_isPaused.value) return
+        _isPaused.value = false
+        startTimer()
+        startLocationUpdates()
+        stepsViewModel.resumeTracking()
     }
 
     fun stopTracking() {
