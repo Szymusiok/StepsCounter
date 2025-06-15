@@ -29,7 +29,7 @@ playServicesMaps = "19.2.0"
 googleAndroidLibrariesMapsplatformSecretsGradlePlugin = "2.0.1"
 appcompat = "1.7.0"
 constraintlayout = "2.1.4"
-room = "2.6.1"
+room = "2.7.1"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }

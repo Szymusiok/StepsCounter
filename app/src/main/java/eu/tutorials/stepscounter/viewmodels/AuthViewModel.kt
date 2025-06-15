@@ -1,21 +1,26 @@
 package eu.tutorials.stepscounter.viewmodels
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import eu.tutorials.stepscounter.databasehelpers.Injection
 import eu.tutorials.stepscounter.databasehelpers.Result
 import eu.tutorials.stepscounter.databasehelpers.UserRepository
+import eu.tutorials.stepscounter.databasehelpers.AppDatabase
 import kotlinx.coroutines.launch
 
 class AuthViewModel(
+    app: Application
+) : AndroidViewModel(app) {
+
     private val userRepository: UserRepository = UserRepository(
         FirebaseAuth.getInstance(),
-        Injection.instance()
+        Injection.instance(),
+        AppDatabase.getInstance(app)
     )
-) : ViewModel() {
 
     private val _authResult = MutableLiveData<Result<Boolean>>()
     val authResult: LiveData<Result<Boolean>> = _authResult
