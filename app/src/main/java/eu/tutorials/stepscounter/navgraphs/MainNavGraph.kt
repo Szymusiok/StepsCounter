@@ -55,6 +55,7 @@ fun MainFlowNavGraph(
         composable(MainRoutes.ProfileScreen.route) {
             ProfileScreen(
                 userEmail = FirebaseAuth.getInstance().currentUser?.email.orEmpty(),
+                settingsViewModel = settingsViewModel,
                 onBack = { navController.popBackStack() },
                 onWorkoutClick = { workoutId ->
                     navController.navigate("workout_detail/$workoutId")

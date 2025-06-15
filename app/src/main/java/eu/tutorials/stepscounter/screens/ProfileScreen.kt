@@ -22,11 +22,13 @@ import eu.tutorials.stepscounter.databasehelpers.Result
 import eu.tutorials.stepscounter.databasehelpers.User
 import eu.tutorials.stepscounter.databasehelpers.UserRepository
 import eu.tutorials.stepscounter.model.Workout
+import eu.tutorials.stepscounter.screens.settings.SettingsViewModel
 import java.util.*
 
 @Composable
 fun ProfileScreen(
     userEmail: String,
+    settingsViewModel: SettingsViewModel,
     userRepository: UserRepository = remember {
         UserRepository(FirebaseAuth.getInstance(), FirebaseFirestore.getInstance())
     },
@@ -37,6 +39,7 @@ fun ProfileScreen(
     var user by remember { mutableStateOf<User?>(null) }
     var workouts by remember { mutableStateOf<List<Workout>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    val stepGoal by settingsViewModel.stepGoal.collectAsState()
 
     LaunchedEffect(userEmail) {
         when (val result = userRepository.getUserData(userEmail)) {
@@ -83,6 +86,34 @@ fun ProfileScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.DarkGray
                 )
+
+                val todaySteps = remember(workouts, stepGoal) {
+                    val today = Calendar.getInstance()
+                    workouts.filter { w ->
+                        val cal = Calendar.getInstance().apply { time = w.timestamp.toDate() }
+                        cal.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                                cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+                    }.sumOf { it.steps }
+                }
+                val progress = if (stepGoal > 0) todaySteps / stepGoal.toFloat() else 0f
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp, start = 24.dp, end = 24.dp)
+                ) {
+                    LinearProgressIndicator(
+                        progress = progress.coerceIn(0f, 1f),
+                        modifier = Modifier.fillMaxWidth(),
+                        color = Color(0xFFE37028)
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "$todaySteps / $stepGoal steps",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontFamily = KdamThmorPro
+                    )
+                }
             }
 
             Divider(modifier = Modifier.padding(horizontal = 24.dp))

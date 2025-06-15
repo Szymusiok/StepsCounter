@@ -21,6 +21,7 @@ open class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         private const val KEY_UNIT = "distance_unit"
         private const val KEY_THEME = "app_theme"
         private const val KEY_SENSOR = "sensor_type"
+        private const val KEY_GOAL = "daily_step_goal"
     }
 
     enum class DistanceUnit { KILOMETERS, MILES }
@@ -66,6 +67,13 @@ open class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         )
     }
 
+    // Daily step goal
+    private val _stepGoal = MutableStateFlow(prefs.getInt(KEY_GOAL, 10000))
+    val stepGoal: StateFlow<Int> = _stepGoal.asStateFlow()
+    fun setStepGoal(goal: Int) = updatePref(KEY_GOAL, goal) {
+        _stepGoal.value = goal
+    }
+
     // Sensor type (step or accelerometer)
     private val _sensorType = MutableStateFlow(
         SensorType.valueOf(prefs.getString(KEY_SENSOR, SensorType.ACCELEROMETER.name)!!)
@@ -100,6 +108,7 @@ open class SettingsViewModel(app: Application) : AndroidViewModel(app) {
                 when (value) {
                     is Boolean -> putBoolean(key, value)
                     is String -> putString(key, value)
+                    is Int -> putInt(key, value)
                     else -> error("Unsupported type")
                 }
                 apply()
