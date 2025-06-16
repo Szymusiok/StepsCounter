@@ -1,6 +1,7 @@
 package eu.tutorials.stepscounter.screens
 
 import android.content.Intent
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -38,8 +39,10 @@ import eu.tutorials.stepscounter.MainActivity
 import eu.tutorials.stepscounter.utils.MountainHeaderFullScreen
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
+import androidx.core.content.ContextCompat
 import eu.tutorials.stepscounter.TrackingService
 import eu.tutorials.stepscounter.viewmodels.SettingsViewModel
+import android.Manifest
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,12 +65,22 @@ fun SettingsScreen(
 
     var shouldLogout by remember { mutableStateOf(false) }
 
-    val permissionLauncher = rememberLauncherForActivityResult(
+    val activityPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = {
             viewModel.setActivityRecognitionEnabled(it)
             scope.launch {
                 snackHost.showSnackbar(if (it) "Activity recognition enabled" else "Permission denied")
+            }
+        }
+    )
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = {
+            viewModel.setNotificationsEnabled(it)
+            scope.launch {
+                snackHost.showSnackbar(if (it) "Notifications enabled" else "Permission denied")
             }
         }
     )
@@ -123,8 +136,21 @@ fun SettingsScreen(
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
 
-                    SettingToggle("Enable Notifications", notificationsEnabled) {
-                        viewModel.setNotificationsEnabled(it)
+                    SettingToggle("Enable Notifications", notificationsEnabled) { enabled ->
+                        if (enabled) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                                ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.POST_NOTIFICATIONS
+                                ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+                            ) {
+                                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            } else {
+                                viewModel.setNotificationsEnabled(true)
+                            }
+                        } else {
+                            viewModel.setNotificationsEnabled(false)
+                        }
                     }
 
                     SettingSegment(
@@ -166,7 +192,18 @@ fun SettingsScreen(
                     )
 
                     Button(
-                        onClick = { TrackingService.sendTestNotification(context) },
+                        onClick = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                                ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.POST_NOTIFICATIONS
+                                ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+                            ) {
+                                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            } else {
+                                TrackingService.sendTestNotification(context)
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
