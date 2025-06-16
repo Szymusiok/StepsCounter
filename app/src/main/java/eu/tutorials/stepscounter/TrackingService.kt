@@ -23,7 +23,10 @@ class TrackingService : Service() {
 
     companion object {
         private const val CHANNEL_ID = "tracking_channel"
+        private const val GOAL_CHANNEL_ID = "goal_channel"
         private const val NOTIF_ID = 1
+        private const val GOAL_NOTIF_ID = 2
+        private const val TEST_NOTIF_ID = 99
 
         const val ACTION_START = "eu.tutorials.stepscounter.action.START"
         const val ACTION_PAUSE = "eu.tutorials.stepscounter.action.PAUSE"
@@ -67,7 +70,35 @@ class TrackingService : Service() {
                 Intent(ctx, TrackingService::class.java).setAction(ACTION_STOP)
             )
         }
+
+        fun sendTestNotification(ctx: Context) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val manager = ctx.getSystemService(NotificationManager::class.java)
+                val channel = NotificationChannel(
+                    GOAL_CHANNEL_ID,
+                    "Step Goals",
+                    NotificationManager.IMPORTANCE_DEFAULT
+                )
+                manager.createNotificationChannel(channel)
+            }
+            val intent = Intent(ctx, MainActivity::class.java)
+            val pending = PendingIntent.getActivity(
+                ctx, 0, intent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            val notif = NotificationCompat.Builder(ctx, GOAL_CHANNEL_ID)
+                .setContentTitle("Test notification")
+                .setContentText("This is a test notification.")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentIntent(pending)
+                .setAutoCancel(true)
+                .build()
+            val mgr = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            mgr.notify(TEST_NOTIF_ID, notif)
+        }
     }
+
+
 
     private lateinit var tracker: LocationTracker
     private lateinit var stepsViewModel: StepsViewModel
@@ -78,6 +109,7 @@ class TrackingService : Service() {
 
     private var timerJob: Job? = null
     private var locationJob: Job? = null
+    private var goalNotified = false
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -116,6 +148,7 @@ class TrackingService : Service() {
             elapsedTime.value = 0L
             speed.value = 0.0
             pace.value = 0.0
+            goalNotified = false
             isPaused.value = false
             isTracking.value = true
 
@@ -162,6 +195,7 @@ class TrackingService : Service() {
                 elapsedTime.update { it + 1000L }
                 steps.value = stepsViewModel.steps.value
                 updateMetrics()
+                maybeSendGoalNotification()
                 updateNotification()
             }
         }
@@ -196,13 +230,19 @@ class TrackingService : Service() {
 
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
+            val trackingChannel = NotificationChannel(
                 CHANNEL_ID,
                 "Workout Tracking",
                 NotificationManager.IMPORTANCE_LOW
             )
+            val goalChannel = NotificationChannel(
+                GOAL_CHANNEL_ID,
+                "Step Goals",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
             val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(channel)
+            manager.createNotificationChannel(trackingChannel)
+            manager.createNotificationChannel(goalChannel)
         }
     }
 
@@ -219,6 +259,33 @@ class TrackingService : Service() {
             .setContentIntent(pending)
             .setOngoing(true)
             .build()
+    }
+
+    private fun maybeSendGoalNotification() {
+        if (goalNotified) return
+        if (!prefs.getBoolean("notifications_enabled", true)) return
+        val goal = prefs.getInt("daily_step_goal", 10000)
+        if (steps.value >= goal) {
+            sendGoalNotification(goal)
+            goalNotified = true
+        }
+    }
+
+    private fun sendGoalNotification(goal: Int) {
+        val intent = Intent(this, MainActivity::class.java)
+        val pending = PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notif = NotificationCompat.Builder(this, GOAL_CHANNEL_ID)
+            .setContentTitle("Goal achieved!")
+            .setContentText("You've reached your daily goal of $goal steps.")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentIntent(pending)
+            .setAutoCancel(true)
+            .build()
+        manager.notify(GOAL_NOTIF_ID, notif)
     }
 
     private fun updateNotification() {

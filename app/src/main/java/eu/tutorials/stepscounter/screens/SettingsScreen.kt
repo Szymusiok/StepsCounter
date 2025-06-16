@@ -38,7 +38,9 @@ import eu.tutorials.stepscounter.MainActivity
 import eu.tutorials.stepscounter.utils.MountainHeaderFullScreen
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
+import eu.tutorials.stepscounter.TrackingService
 import eu.tutorials.stepscounter.viewmodels.SettingsViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -162,6 +164,16 @@ fun SettingsScreen(
                         accent = accent,
                         textColor = textColor
                     )
+
+                    Button(
+                        onClick = { TrackingService.sendTestNotification(context) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = accent)
+                    ) {
+                        Text("SEND TEST NOTIFICATION", color = Color.White)
+                    }
 
                     Button(
                         onClick = {
