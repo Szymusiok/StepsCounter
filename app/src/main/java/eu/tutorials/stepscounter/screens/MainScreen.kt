@@ -6,8 +6,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -182,10 +185,10 @@ fun MainScreen(
                         .height(56.dp)
                         .width(180.dp)
                 ) {
-                    Text(
-                        "Start",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontFamily = KdamThmorPro
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = "Start",
+                        modifier = Modifier.size(32.dp)
                     )
                 }
             } else {
@@ -203,10 +206,10 @@ fun MainScreen(
                             .height(56.dp)
                             .width(120.dp)
                     ) {
-                        Text(
-                            if (isPaused) "Resume" else "Pause",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontFamily = KdamThmorPro
+                        Icon(
+                            imageVector = if (isPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
+                            contentDescription = if (isPaused) "Resume" else "Pause",
+                            modifier = Modifier.size(32.dp)
                         )
                     }
                     Button(
@@ -224,10 +227,10 @@ fun MainScreen(
                             .height(56.dp)
                             .width(120.dp)
                     ) {
-                        Text(
-                            "Stop",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontFamily = KdamThmorPro
+                        Icon(
+                            imageVector = Icons.Default.Stop,
+                            contentDescription = "Stop",
+                            modifier = Modifier.size(32.dp)
                         )
                     }
                 }

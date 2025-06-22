@@ -28,7 +28,8 @@ import androidx.compose.material.icons.filled.VisibilityOff
 @Composable
 fun SignUpScreen(
     authViewModel: AuthViewModel,
-    onNavigateToLogin: () -> Unit
+    onNavigateToLogin: () -> Unit,
+    onSignUpSuccess: () -> Unit
 ) {
     val authResult by authViewModel.authResult.observeAsState(initial = null)
     var showErrorDialog by remember { mutableStateOf(false) }
@@ -42,10 +43,16 @@ fun SignUpScreen(
 
     val isLoading by authViewModel.isLoading.observeAsState(false)
 
+    var showSuccessDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(authResult) {
-        if (authResult is Result.Error) {
-            errorMessage = (authResult as Result.Error).exception.localizedMessage ?: "Sign-up failed."
-            showErrorDialog = true
+        when (authResult) {
+            is Result.Success -> showSuccessDialog = true
+            is Result.Error -> {
+                errorMessage = (authResult as Result.Error).exception.localizedMessage ?: "Sign-up failed."
+                showErrorDialog = true
+            }
+            else -> Unit
         }
     }
 
@@ -74,6 +81,22 @@ fun SignUpScreen(
                 text = { Text(errorMessage) },
                 confirmButton = {
                     TextButton(onClick = { showErrorDialog = false }) {
+                        Text("OK", fontFamily = KdamThmorPro)
+                    }
+                }
+            )
+        }
+
+        if (showSuccessDialog) {
+            AlertDialog(
+                onDismissRequest = {},
+                title = { Text("Sign Up Success", fontFamily = KdamThmorPro) },
+                text = { Text("Registration successful!") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showSuccessDialog = false
+                        onSignUpSuccess()
+                    }) {
                         Text("OK", fontFamily = KdamThmorPro)
                     }
                 }

@@ -41,7 +41,13 @@ fun StartNavigationGraph(
         composable(Screen.SignupScreen.route) {
             SignUpScreen(
                 authViewModel = authViewModel,
-                onNavigateToLogin = { navController.navigate(Screen.LoginScreen.route) }
+                onNavigateToLogin = { navController.navigate(Screen.LoginScreen.route) },
+                onSignUpSuccess = {
+                    navController.navigate(Screen.MainFlow.route) {
+                        popUpTo(Screen.StartScreen.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
             )
         }
         composable(Screen.LoginScreen.route) {

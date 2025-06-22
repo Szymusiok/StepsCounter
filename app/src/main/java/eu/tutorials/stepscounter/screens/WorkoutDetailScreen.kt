@@ -26,6 +26,7 @@ import eu.tutorials.stepscounter.databasehelpers.UserRepository
 import eu.tutorials.stepscounter.databasehelpers.AppDatabase
 import eu.tutorials.stepscounter.model.Workout
 import java.util.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun WorkoutDetailScreen(
@@ -145,7 +146,48 @@ fun WorkoutDetailScreen(
                         SummaryRow("Avg. Pace", "$paceMin:${paceRemainder.toString().padStart(2, '0')} min/km")
                     }
 
-                    Spacer(Modifier.height(32.dp))
+                    Spacer(Modifier.height(24.dp))
+
+                    var showDeleteDialog by remember { mutableStateOf(false) }
+
+                    Button(
+                        onClick = { showDeleteDialog = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp)
+                    ) {
+                        Text("Delete workout", fontFamily = KdamThmorPro)
+                    }
+
+                    if (showDeleteDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showDeleteDialog = false },
+                            title = { Text("Delete Workout", fontFamily = KdamThmorPro) },
+                            text = { Text("Are you sure you want to delete this workout?") },
+                            confirmButton = {
+                                val scope = rememberCoroutineScope()
+                                TextButton(onClick = {
+                                    scope.launch {
+                                        FirebaseAuth.getInstance().currentUser?.email?.let {
+                                            userRepository.deleteWorkout(it, wk.id)
+                                        }
+                                        showDeleteDialog = false
+                                        onBack()
+                                    }
+                                }) {
+                                    Text("Delete", fontFamily = KdamThmorPro)
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDeleteDialog = false }) {
+                                    Text("Cancel", fontFamily = KdamThmorPro)
+                                }
+                            }
+                        )
+                    }
+
+                    Spacer(Modifier.height(8.dp))
                 }
             }
         }

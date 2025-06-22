@@ -124,4 +124,19 @@ class UserRepository(
             local
         }
     }
+
+    suspend fun deleteWorkout(userEmail: String, workoutId: String): Result<Boolean> {
+        database.workoutDao().deleteById(workoutId)
+        return try {
+            firestore.collection("users")
+                .document(userEmail)
+                .collection("workouts")
+                .document(workoutId)
+                .delete()
+                .await()
+            Result.Success(true)
+        } catch (e: Exception) {
+            Result.Error(e)
+        }
+    }
 }
