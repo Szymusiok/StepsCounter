@@ -47,8 +47,12 @@ class UserRepository(
             Result.Error(e)
         }
 
-    suspend fun saveWorkout(userEmail: String, workout: Workout): Result<Boolean> {
-        database.workoutDao().insert(workout.toEntity())
+    suspend fun saveWorkout(userEmail: String?, workout: Workout): Result<Boolean> {
+        val entity = workout.toEntity()
+        database.workoutDao().insert(entity)
+        if (userEmail.isNullOrEmpty()) {
+            return Result.Success(true)
+        }
         return try {
             val data = hashMapOf(
                 "path" to workout.path.toFirestorePath(),
@@ -61,8 +65,10 @@ class UserRepository(
             firestore.collection("users")
                 .document(userEmail)
                 .collection("workouts")
-                .add(data)
+                .document(entity.id)
+                .set(data)
                 .await()
+            database.workoutDao().markSynced(entity.id)
             Result.Success(true)
         } catch (e: Exception) {
             Result.Error(e)
@@ -90,7 +96,7 @@ class UserRepository(
                     timestamp = doc["timestamp"] as? Timestamp ?: Timestamp.now()
                 )
             }
-            remote.forEach { database.workoutDao().insert(it.toEntity()) }
+            remote.forEach { database.workoutDao().insert(it.toEntity().copy(synced = true)) }
             remote
         } catch (e: Exception) {
             local
@@ -120,7 +126,7 @@ class UserRepository(
                 durationMs = doc["durationMs"] as? Long ?: 0L,
                 timestamp = doc["timestamp"] as? Timestamp ?: Timestamp.now()
             )
-            database.workoutDao().insert(workout.toEntity())
+            database.workoutDao().insert(workout.toEntity().copy(synced = true))
             workout
         } catch (e: Exception) {
             local
@@ -139,6 +145,17 @@ class UserRepository(
             Result.Success(true)
         } catch (e: Exception) {
             Result.Error(e)
+        }
+    }
+
+    suspend fun syncWorkouts(userEmail: String) {
+        val unsynced = database.workoutDao().getUnsynced()
+        for (wk in unsynced) {
+            val workout = wk.toModel()
+            val result = saveWorkout(userEmail, workout)
+            if (result is Result.Success) {
+                database.workoutDao().markSynced(wk.id)
+            }
         }
     }
 }

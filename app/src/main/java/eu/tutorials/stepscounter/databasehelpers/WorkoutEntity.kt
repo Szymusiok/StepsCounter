@@ -15,5 +15,6 @@ data class WorkoutEntity(
     val steps: Int,
     val calories: Int,
     val durationMs: Long,
-    val timestamp: Long
+    val timestamp: Long,
+    val synced: Boolean = false
 )

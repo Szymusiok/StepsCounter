@@ -88,17 +88,15 @@ fun SummaryScreen(
     val userEmail = FirebaseAuth.getInstance().currentUser?.email
 
     LaunchedEffect(Unit) {
-        userEmail?.let {
-            val workout = Workout(
-                path = pathPoints,
-                distanceMeters = totalDistance,
-                steps = steps,
-                calories = calories,
-                durationMs = elapsedTimeMs,
-                timestamp = Timestamp.now()
-            )
-            userRepo.saveWorkout(it, workout)
-        }
+        val workout = Workout(
+            path = pathPoints,
+            distanceMeters = totalDistance,
+            steps = steps,
+            calories = calories,
+            durationMs = elapsedTimeMs,
+            timestamp = Timestamp.now()
+        )
+        userRepo.saveWorkout(userEmail, workout)
     }
 
     val view = LocalView.current

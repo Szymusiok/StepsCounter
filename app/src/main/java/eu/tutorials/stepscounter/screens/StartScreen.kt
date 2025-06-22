@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,15 +22,18 @@ import eu.tutorials.stepscounter.ui.theme.KdamThmorPro
 import eu.tutorials.stepscounter.R
 import eu.tutorials.stepscounter.ui.theme.BORDOWY
 import eu.tutorials.stepscounter.ui.theme.JASNY_KREMOWY
+import eu.tutorials.stepscounter.utils.NetworkUtils
 
 // Splash screen with the logo and Log In / Sign Up buttons
 @Composable
 fun StartScreen(
     onNavigateToLogin: () -> Unit,
     onNavigateToSignUp: () -> Unit,
+    onContinueOffline: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    var showOfflineDialog by remember { mutableStateOf(!NetworkUtils.isNetworkAvailable(context)) }
 
     Box(
         modifier = modifier
@@ -111,6 +114,27 @@ fun StartScreen(
 
                 Text("v0.1", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.8f))
             }
+        }
+
+        if (showOfflineDialog) {
+            AlertDialog(
+                onDismissRequest = { showOfflineDialog = false },
+                title = { Text("No Internet", fontFamily = KdamThmorPro) },
+                text = { Text("Continue in offline mode?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showOfflineDialog = false
+                        onContinueOffline()
+                    }) {
+                        Text("Continue", fontFamily = KdamThmorPro)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showOfflineDialog = false }) {
+                        Text("Cancel", fontFamily = KdamThmorPro)
+                    }
+                }
+            )
         }
     }
 }

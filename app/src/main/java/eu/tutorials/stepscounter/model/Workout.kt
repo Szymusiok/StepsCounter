@@ -34,7 +34,8 @@ fun Workout.toEntity(): WorkoutEntity = WorkoutEntity(
     steps = steps,
     calories = calories,
     durationMs = durationMs,
-    timestamp = timestamp.toDate().time
+    timestamp = timestamp.toDate().time,
+    synced = false
 )
 
 fun WorkoutEntity.toModel(): Workout = Workout(

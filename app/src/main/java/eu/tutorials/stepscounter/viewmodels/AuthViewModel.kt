@@ -40,7 +40,11 @@ class AuthViewModel(
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            _authResult.value = userRepository.login(email, password)
+            val result = userRepository.login(email, password)
+            if (result is Result.Success) {
+                userRepository.syncWorkouts(email)
+            }
+            _authResult.value = result
             _isLoading.value = false
         }
     }

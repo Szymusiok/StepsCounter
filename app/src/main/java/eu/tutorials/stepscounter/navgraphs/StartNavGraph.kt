@@ -38,6 +38,12 @@ fun StartNavigationGraph(
             StartScreen(
                 onNavigateToLogin = { navController.navigate(Screen.LoginScreen.route)},
                 onNavigateToSignUp = { navController.navigate(Screen.SignupScreen.route)},
+                onContinueOffline = {
+                    navController.navigate(Screen.MainFlow.route) {
+                        popUpTo(Screen.StartScreen.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
                 modifier = modifier
             )
         }
@@ -56,15 +62,24 @@ fun StartNavigationGraph(
         composable(Screen.LoginScreen.route) {
             LoginScreen(
                 authViewModel = authViewModel,
-                onNavigateToSignUp = { navController.navigate(Screen.SignupScreen.route) }
-            ){
-                navController.navigate(Screen.MainFlow.route){
-                    popUpTo(Screen.StartScreen.route){
-                        inclusive = true
+                onNavigateToSignUp = { navController.navigate(Screen.SignupScreen.route) },
+                onSignInSuccess = {
+                    navController.navigate(Screen.MainFlow.route){
+                        popUpTo(Screen.StartScreen.route){
+                            inclusive = true
+                        }
+                        launchSingleTop = true
                     }
-                    launchSingleTop = true
+                },
+                onContinueOffline = {
+                    navController.navigate(Screen.MainFlow.route){
+                        popUpTo(Screen.StartScreen.route){
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 }
-            }
+            )
         }
         composable(Screen.MainFlow.route) {
             MainFlowNavGraph(

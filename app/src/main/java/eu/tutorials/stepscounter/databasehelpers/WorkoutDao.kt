@@ -25,4 +25,10 @@ interface WorkoutDao {
     // Remove a workout
     @Query("DELETE FROM workouts WHERE id = :id")
     suspend fun deleteById(id: String)
+
+    @Query("SELECT * FROM workouts WHERE synced = 0")
+    suspend fun getUnsynced(): List<WorkoutEntity>
+
+    @Query("UPDATE workouts SET synced = 1 WHERE id = :id")
+    suspend fun markSynced(id: String)
 }

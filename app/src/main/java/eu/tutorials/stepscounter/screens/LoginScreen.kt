@@ -23,12 +23,16 @@ import eu.tutorials.stepscounter.ui.theme.JASNY_KREMOWY
 import eu.tutorials.stepscounter.viewmodels.AuthViewModel
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import eu.tutorials.stepscounter.utils.NetworkUtils
+import androidx.compose.ui.platform.LocalContext
+
 
 @Composable
 fun LoginScreen(
     authViewModel: AuthViewModel,
     onNavigateToSignUp: () -> Unit,
-    onSignInSuccess: () -> Unit
+    onSignInSuccess: () -> Unit,
+    onContinueOffline: () -> Unit
 ) {
     val result by authViewModel.authResult.observeAsState(initial = null)
 
@@ -40,6 +44,8 @@ fun LoginScreen(
     var errorMessage by remember { mutableStateOf("") }
 
     val isLoading by authViewModel.isLoading.observeAsState(false)
+    val context = LocalContext.current
+    var showOfflineDialog by remember { mutableStateOf(!NetworkUtils.isNetworkAvailable(context)) }
 
     LaunchedEffect(result) {
         when (result) {
@@ -86,6 +92,27 @@ fun LoginScreen(
             ) {
                 CircularProgressIndicator(color = BORDOWY)
             }
+        }
+
+        if (showOfflineDialog) {
+            AlertDialog(
+                onDismissRequest = { showOfflineDialog = false },
+                title = { Text("No Internet", fontFamily = KdamThmorPro) },
+                text = { Text("Continue in offline mode?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showOfflineDialog = false
+                        onContinueOffline()
+                    }) {
+                        Text("Continue", fontFamily = KdamThmorPro)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showOfflineDialog = false }) {
+                        Text("Cancel", fontFamily = KdamThmorPro)
+                    }
+                }
+            )
         }
     }
 }
