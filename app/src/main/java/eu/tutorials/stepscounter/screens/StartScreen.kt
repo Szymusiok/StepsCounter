@@ -23,6 +23,7 @@ import eu.tutorials.stepscounter.R
 import eu.tutorials.stepscounter.ui.theme.BORDOWY
 import eu.tutorials.stepscounter.ui.theme.JASNY_KREMOWY
 
+// Splash screen with the logo and Log In / Sign Up buttons
 @Composable
 fun StartScreen(
     onNavigateToLogin: () -> Unit,
@@ -30,17 +31,13 @@ fun StartScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    // val videoUri = Uri.parse("android.resource://${context.packageName}/${R.raw.auth_video}") // your video file
 
     Box(
         modifier = modifier
             .fillMaxSize()
             .systemBarsPadding() // handle notch, status bar
     ) {
-        // 🎥 Background Video
-        // AuthVideoBackground(videoUri = videoUri)
 
-        // 🌓 Gradient Overlay (faded, subtle)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -56,7 +53,7 @@ fun StartScreen(
                 )
         )
 
-        // 🧱 Foreground UI
+        // Main content
         Column(
             modifier = Modifier
                 .fillMaxSize()

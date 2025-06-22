@@ -173,7 +173,7 @@ fun SummaryScreen(
                     fontFamily = KdamThmorPro
                 )
                 Spacer(Modifier.height(16.dp))
-                // Map
+                // Small map preview of the workout
                 if (pathPoints.isNotEmpty()) {
                     val cameraState = rememberCameraPositionState {
                         position = CameraPosition.fromLatLngZoom(pathPoints.first(), 14f)
@@ -201,7 +201,7 @@ fun SummaryScreen(
                     }
                 }
                 Spacer(Modifier.height(16.dp))
-                // Stats
+                // Card with distance, time and other stats
                 Card(
                     modifier = Modifier
                         .padding(horizontal = 24.dp)
@@ -231,7 +231,7 @@ fun SummaryScreen(
     }
 }
 
-
+// Displays one line of workout data
 @Composable
 fun SummaryItem(label: String, value: String) {
     Column {

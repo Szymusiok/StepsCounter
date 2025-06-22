@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
+// Foreground service that records distance, time and steps during a workout
 class TrackingService : Service() {
 
     companion object {
@@ -28,11 +29,13 @@ class TrackingService : Service() {
         private const val GOAL_NOTIF_ID = 2
         private const val TEST_NOTIF_ID = 99
 
+        // Actions used to control the service
         const val ACTION_START = "eu.tutorials.stepscounter.action.START"
         const val ACTION_PAUSE = "eu.tutorials.stepscounter.action.PAUSE"
         const val ACTION_RESUME = "eu.tutorials.stepscounter.action.RESUME"
         const val ACTION_STOP = "eu.tutorials.stepscounter.action.STOP"
 
+        // Mutable state shared with the UI
         val isTracking = MutableStateFlow(false)
         val isPaused = MutableStateFlow(false)
         val pathPoints = MutableStateFlow<List<LatLng>>(emptyList())
@@ -43,6 +46,7 @@ class TrackingService : Service() {
         val pace = MutableStateFlow(0.0)
         val steps = MutableStateFlow(0)
 
+        // helpers
         fun start(ctx: Context) {
             ContextCompat.startForegroundService(
                 ctx,
@@ -98,8 +102,6 @@ class TrackingService : Service() {
         }
     }
 
-
-
     private lateinit var tracker: LocationTracker
     private lateinit var stepsViewModel: StepsViewModel
     private val prefs by lazy {
@@ -137,6 +139,7 @@ class TrackingService : Service() {
         scope.cancel()
     }
 
+    // Start collecting location and step data
     private fun startTracking() {
         if (isTracking.value) return
 
@@ -159,6 +162,7 @@ class TrackingService : Service() {
         }
     }
 
+    // Temporarily stop without resetting data
     private fun pauseTracking() {
         if (!isTracking.value || isPaused.value) return
         isPaused.value = true
@@ -168,6 +172,7 @@ class TrackingService : Service() {
         updateNotification()
     }
 
+    // Resume after a pause
     private fun resumeTracking() {
         if (!isTracking.value || !isPaused.value) return
         isPaused.value = false
@@ -176,6 +181,7 @@ class TrackingService : Service() {
         startLocationUpdates()
     }
 
+    // Finish the workout and remove the notification
     private fun stopTracking() {
         if (!isTracking.value) return
         isTracking.value = false
@@ -187,6 +193,7 @@ class TrackingService : Service() {
         stopSelf()
     }
 
+    // Increment timers and update numbers once per second
     private fun startTimer() {
         timerJob?.cancel()
         timerJob = scope.launch {
@@ -201,6 +208,7 @@ class TrackingService : Service() {
         }
     }
 
+    // Collect location updates in the background
     private fun startLocationUpdates() {
         locationJob?.cancel()
         locationJob = scope.launch {
@@ -261,6 +269,7 @@ class TrackingService : Service() {
             .build()
     }
 
+    // Notify the user when they reach the daily step goal
     private fun maybeSendGoalNotification() {
         if (goalNotified) return
         if (!prefs.getBoolean("notifications_enabled", true)) return
@@ -271,6 +280,7 @@ class TrackingService : Service() {
         }
     }
 
+    // Build and show the step goal notification
     private fun sendGoalNotification(goal: Int) {
         val intent = Intent(this, MainActivity::class.java)
         val pending = PendingIntent.getActivity(

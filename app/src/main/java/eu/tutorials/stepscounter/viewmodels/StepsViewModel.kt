@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlin.math.abs
 import kotlin.math.sqrt
 
+// ViewModel that counts steps either from the built-in step counter
+// or by processing accelerometer data.
 open class StepsViewModel(private val app: Application) : AndroidViewModel(app), SensorEventListener {
 
     private val sensorManager = app.getSystemService(Application.SENSOR_SERVICE) as SensorManager
@@ -38,6 +40,7 @@ open class StepsViewModel(private val app: Application) : AndroidViewModel(app),
     private var isTracking = false
     private var sensorTypeCached: SettingsViewModel.SensorType? = null
 
+    //Start listening to sensor data
     fun startTracking() {
         if (isTracking) return
         resetState()
@@ -66,12 +69,14 @@ open class StepsViewModel(private val app: Application) : AndroidViewModel(app),
         isTracking = true
     }
 
+    // Stop all sensors
     fun stopTracking() {
         if (!isTracking) return
         sensorManager.unregisterListener(this)
         isTracking = false
     }
 
+    // Resume listening after a paus
     fun resumeTracking() {
         if (isTracking) return
 
@@ -99,21 +104,24 @@ open class StepsViewModel(private val app: Application) : AndroidViewModel(app),
         isTracking = true
     }
 
+    // Called whenever a sensor event occurs
     override fun onSensorChanged(event: SensorEvent) {
         if (isUsingStepSensor && event.sensor.type == Sensor.TYPE_STEP_COUNTER) {
             val total = event.values.getOrNull(0)?.toInt() ?: return
             if (initialCount == null) initialCount = total
             _steps.value = (total - (initialCount ?: total)).coerceAtLeast(0)
         } else if (!isUsingStepSensor && event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+            // High-pass filter the accelerometer signal
             for (i in 0..2) {
                 hpFiltered[i] = hpAlpha * (hpFiltered[i] + event.values[i] - prevAccel[i])
                 prevAccel[i] = event.values[i]
             }
+            // Compute magnitude and a dynamic threshold
             val mag = sqrt(hpFiltered[0] * hpFiltered[0] + hpFiltered[1] * hpFiltered[1] + hpFiltered[2] * hpFiltered[2])
             avgMag = emaAlpha * avgMag + (1 - emaAlpha) * mag
             meanDev = emaAlpha * meanDev + (1 - emaAlpha) * abs(mag - avgMag)
             val thr = avgMag + thresholdF * meanDev
-
+            // Detect a step when magnitude crosses the threshold
             val now = System.currentTimeMillis()
             if (mag > thr && prevMag <= thr && now - lastStepTs > minStepIntv) {
                 _steps.value = _steps.value + 1
@@ -129,7 +137,7 @@ open class StepsViewModel(private val app: Application) : AndroidViewModel(app),
         super.onCleared()
         stopTracking()
     }
-
+    // Clear all counters so tracking can restart cleanly
     private fun resetState() {
         _steps.value = 0
         initialCount = null

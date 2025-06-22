@@ -14,11 +14,13 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
+// Small helper over FusedLocationProviderClient.
+// Used to get one-time or continuous location data.
 class LocationTracker(private val context: Context) {
 
     private val locationClient = LocationServices.getFusedLocationProviderClient(context)
 
-    /** Returns last known location or null if unavailable. */
+    // Return the last known location or null
     @SuppressLint("MissingPermission")
     suspend fun getCurrentLocation(): LatLng? = suspendCancellableCoroutine { cont ->
         locationClient.lastLocation
@@ -30,7 +32,7 @@ class LocationTracker(private val context: Context) {
             }
     }
 
-    /** Emits continuous location updates via Flow. */
+    // Emit location changes as a Flow
     @SuppressLint("MissingPermission")
     fun locationUpdates(
         intervalMs: Long = 2_000L,
@@ -57,6 +59,7 @@ class LocationTracker(private val context: Context) {
         awaitClose { locationClient.removeLocationUpdates(callback) }
     }
 
+    // Check if either fine or coarse location permission is granted
     private fun hasLocationPermission(): Boolean {
         val fine = ContextCompat.checkSelfPermission(
             context, android.Manifest.permission.ACCESS_FINE_LOCATION

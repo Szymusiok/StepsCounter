@@ -13,12 +13,14 @@ import eu.tutorials.stepscounter.screens.SignUpScreen
 import eu.tutorials.stepscounter.screens.StartScreen
 import eu.tutorials.stepscounter.viewmodels.SettingsViewModel
 
+// Navigation graph for login and sign-up screens
 fun isAuthRoute(route: String?) = route in listOf(
     Screen.StartScreen.route,
     Screen.LoginScreen.route,
     Screen.SignupScreen.route
 )
 
+// Navigation graph for the sign in flow
 @Composable
 fun StartNavigationGraph(
     modifier: Modifier,
@@ -27,6 +29,7 @@ fun StartNavigationGraph(
     settingsViewModel: SettingsViewModel
 ) {
 
+    // Top level host for auth screens
     NavHost(
         navController = navController,
         startDestination = Screen.StartScreen.route

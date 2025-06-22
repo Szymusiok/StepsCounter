@@ -3,6 +3,7 @@ package eu.tutorials.stepscounter.databasehelpers
 import androidx.room.TypeConverter
 import com.google.android.gms.maps.model.LatLng
 
+// Converts complex types for Room
 class Converters {
     @TypeConverter
     fun pathToString(path: List<LatLng>): String =

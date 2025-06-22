@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
+// Stores and exposes user preferences such as units, theme and sensors
 open class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = app.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     private val sensorManager = app.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -98,10 +99,12 @@ open class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // True if the device exposes a hardware step counter
     private fun hasStepSensor(): Boolean {
         return sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) != null
     }
 
+    // Save a value to SharedPreferences and update our state
     private fun <T> updatePref(key: String, value: T, after: () -> Unit) {
         viewModelScope.launch {
             prefs.edit().apply {

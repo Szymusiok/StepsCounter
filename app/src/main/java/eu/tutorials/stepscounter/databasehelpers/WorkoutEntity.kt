@@ -5,6 +5,7 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.android.gms.maps.model.LatLng
 
+// Room entity for saved workouts
 @Entity(tableName = "workouts")
 @TypeConverters(Converters::class)
 data class WorkoutEntity(

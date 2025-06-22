@@ -6,9 +6,10 @@ import eu.tutorials.stepscounter.databasehelpers.WorkoutEntity
 import java.util.Date
 import java.util.UUID
 
+// Represents a single workout session
 data class Workout(
     val id: String = "",
-    val path: List<LatLng> = emptyList(), // used in-app only
+    val path: List<LatLng> = emptyList(),
     val distanceMeters: Double = 0.0,
     val steps: Int = 0,
     val calories: Int = 0,

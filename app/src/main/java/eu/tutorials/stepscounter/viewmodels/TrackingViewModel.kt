@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
+// Exposes data from TrackingService to the UI
 class TrackingViewModel(
     private val ctx: Context
 ) : ViewModel() {

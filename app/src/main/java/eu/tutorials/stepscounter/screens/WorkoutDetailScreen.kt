@@ -64,7 +64,7 @@ fun WorkoutDetailScreen(
             }
 
             Box(modifier = Modifier.fillMaxSize()) {
-                MountainHeaderFullScreen() // your enhanced gradient mountain background
+                MountainHeaderFullScreen() // ydecorative header
 
                 Column(
                     modifier = Modifier
@@ -194,6 +194,7 @@ fun WorkoutDetailScreen(
     }
 }
 
+// Format milliseconds into h:m:s
 fun formatDuration(durationMs: Long): String {
     val totalSeconds = durationMs / 1000
     val hours = totalSeconds / 3600
@@ -202,6 +203,7 @@ fun formatDuration(durationMs: Long): String {
     return String.format("%d:%02d:%02d", hours, minutes, seconds)
 }
 
+// Single row of label and value used in details
 @Composable
 fun SummaryRow(label: String, value: String) {
     Row(

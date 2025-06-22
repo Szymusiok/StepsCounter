@@ -19,11 +19,13 @@ import eu.tutorials.stepscounter.viewmodels.SettingsViewModel
 import eu.tutorials.stepscounter.utils.Screen
 import eu.tutorials.stepscounter.utils.MainScreen as MainRoutes
 
+// Navigation graph for the main part of the app
 @Composable
 fun MainFlowNavGraph(
     navController: NavHostController,
     settingsViewModel: SettingsViewModel
 ) {
+    // Host containing screens after login
     NavHost(
         navController = navController,
         startDestination = MainRoutes.HomeScreen.route

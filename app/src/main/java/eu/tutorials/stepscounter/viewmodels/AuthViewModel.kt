@@ -12,6 +12,7 @@ import eu.tutorials.stepscounter.databasehelpers.UserRepository
 import eu.tutorials.stepscounter.databasehelpers.AppDatabase
 import kotlinx.coroutines.launch
 
+// Handles sign in and sign up
 class AuthViewModel(
     app: Application
 ) : AndroidViewModel(app) {

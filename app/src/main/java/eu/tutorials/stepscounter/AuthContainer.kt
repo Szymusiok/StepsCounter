@@ -15,6 +15,8 @@ import eu.tutorials.stepscounter.viewmodels.SettingsViewModel
 import eu.tutorials.stepscounter.utils.AuthVideoBackground
 import eu.tutorials.stepscounter.viewmodels.AuthViewModel
 
+// Wrapper around the login and sign up screens.
+// Displays a looping video when those screens are shown
 @Composable
 fun AuthContainer(
     videoUri: Uri,
@@ -23,12 +25,12 @@ fun AuthContainer(
     authViewModel: AuthViewModel,
     settingsViewModel: SettingsViewModel
 ) {
-    // Watch route changes
+    // Figure out which screen we are on to decide if the video should play
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
     val showVideo = isAuthRoute(currentRoute)
 
-    // Fullscreen container with system bar padding
+    // Fill the screen and account for the system bars
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -38,7 +40,7 @@ fun AuthContainer(
             AuthVideoBackground(videoUri = videoUri)
         }
 
-        // Navigation graph host
+        // login/signup navigation
         StartNavigationGraph(
             modifier = Modifier.fillMaxSize(),
             navController = navController,

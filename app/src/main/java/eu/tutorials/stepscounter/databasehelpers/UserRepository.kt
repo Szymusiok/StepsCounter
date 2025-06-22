@@ -10,11 +10,13 @@ import kotlinx.coroutines.tasks.await
 import eu.tutorials.stepscounter.model.toEntity
 import eu.tutorials.stepscounter.model.toModel
 
+// Handles communication with Firebase and local database
 class UserRepository(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore,
     private val database: AppDatabase
 ){
+    // Save user data to Firestore
     private suspend fun saveUserToFirestore(user: User) {
         firestore.collection("users").document(user.email).set(user).await()
     }

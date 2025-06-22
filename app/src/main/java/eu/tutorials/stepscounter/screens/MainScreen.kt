@@ -128,13 +128,13 @@ fun MainScreen(
                 ),
                 durationMs = 1000
             )
-            locationLoaded = true // ✅ Now we trust that location is visible
+            locationLoaded = true //  now we can show the map
         }
     }
 
     Box(Modifier.fillMaxSize()) {
         if (!locationLoaded) {
-            // Show loading indicator over darkened background
+            // Show  a spinner while we wait for the first location
             Box(
                 Modifier
                     .fillMaxSize()
@@ -160,7 +160,7 @@ fun MainScreen(
             }
         }
 
-        // Bottom card
+        // Bottom sheet with stats and action buttons
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -272,6 +272,7 @@ fun MainScreen(
     }
 }
 
+// Helper to display one statistic label and value
 @Composable
 private fun StatItem(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -280,6 +281,7 @@ private fun StatItem(label: String, value: String) {
     }
 }
 
+// Button used in the bottom sheet
 @Composable
 private fun IconTextButton(text: String, icon: ImageVector, onClick: () -> Unit) {
     TextButton(onClick = onClick) {
@@ -290,6 +292,7 @@ private fun IconTextButton(text: String, icon: ImageVector, onClick: () -> Unit)
     }
 }
 
+// Thin divider between the profile and settings buttons
 @Composable
 private fun VerticalDivider() {
     Box(
@@ -300,6 +303,7 @@ private fun VerticalDivider() {
     )
 }
 
+// Utility to format a duration as HH:MM:SS
 private fun formatTime(ms: Long): String {
     val totalSec = ms / 1000
     val hrs = totalSec / 3600

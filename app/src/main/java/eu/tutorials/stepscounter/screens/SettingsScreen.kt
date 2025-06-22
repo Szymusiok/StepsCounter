@@ -233,7 +233,7 @@ fun SettingsScreen(
 }
 
 
-
+// Switch used for on/off options
 @Composable
 fun SettingToggle(title: String, value: Boolean, onToggle: (Boolean) -> Unit) {
     Row(
@@ -255,6 +255,7 @@ fun SettingToggle(title: String, value: Boolean, onToggle: (Boolean) -> Unit) {
     }
 }
 
+// Segmented buttons for mutually exclusive choices
 @Composable
 fun SettingSegment(
     title: String,
@@ -316,6 +317,7 @@ fun SettingSegment(
     }
 }
 
+// Slider to choose a numeric value
 @Composable
 fun SettingSlider(
     title: String,

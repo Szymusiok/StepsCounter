@@ -13,7 +13,7 @@ import kotlin.io.path.Path
 @Composable
 fun MountainHeaderFullScreen(modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize()) {
-        // Mountains Canvas
+        // Draw the mountain shapes
         Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width
             val height = size.height
@@ -47,7 +47,7 @@ fun MountainHeaderFullScreen(modifier: Modifier = Modifier) {
             drawPath(frontPeaks, Color(0xFF998F7A))
         }
 
-        // Stronger overlay fade from bottom only
+        //Light fade over the bottom part
         Box(
             modifier = Modifier
                 .fillMaxSize()

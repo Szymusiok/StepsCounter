@@ -18,15 +18,16 @@ import eu.tutorials.stepscounter.viewmodels.AuthViewModel
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
+// Main entry point. Hides the system UI and loads our Compose screens.
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ✅ Enable drawing behind system bars
+        // Let our content go behind the status and nav bars
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
 
-        // ✅ HIDE system bars (immersive mode)
+        // Hide the bars
         WindowInsetsControllerCompat(window, window.decorView).let { controller ->
             controller.systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
@@ -52,6 +53,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Build the URI to the intro video in res/raw
     private fun getVideoUri(): Uri {
         val rawId = resources.getIdentifier("trekking", "raw", packageName)
         return Uri.parse("android.resource://$packageName/$rawId")
