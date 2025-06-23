@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -53,6 +54,8 @@ fun MainScreen(
     ) -> Unit
 ) {
     val context = LocalContext.current
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+
 
     val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         listOf(
@@ -167,17 +170,20 @@ fun MainScreen(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
+                .height(screenHeight)
                 .graphicsLayer {
                     transformOrigin = TransformOrigin(0.5f, 1f)
                     scaleX = 0.85f
                     scaleY = 0.85f
+                    scaleX = 1f
+                    scaleY = 1f / 3f
                 }
                 .background(
                     Color(0xFFFDFBF9),
                     shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
                 )
-                .padding(vertical = 12.dp, horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(vertical = 16.dp, horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (!isTracking) {
@@ -198,7 +204,7 @@ fun MainScreen(
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = "Start",
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             } else {
@@ -219,7 +225,7 @@ fun MainScreen(
                         Icon(
                             imageVector = if (isPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
                             contentDescription = if (isPaused) "Resume" else "Pause",
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                     Button(
@@ -228,7 +234,7 @@ fun MainScreen(
                             trackingViewModel.stopTracking()
                             onNavigateToSummary(rawMeters, steps, calories.toInt(), elapsedMs, pathPoints)
                         },
-                        shape = RoundedCornerShape(30.dp),
+                        shape = RoundedCornerShape(0.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFFE37028),
                             contentColor = Color.White
@@ -246,7 +252,7 @@ fun MainScreen(
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
                     StatItem("DURATION", formatTime(elapsedMs))
                     StatItem("DISTANCE", String.format("%.2f %s", displayDistance, unitLabel))
@@ -270,7 +276,7 @@ fun MainScreen(
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(top = 12.dp),
+                    .padding(top = 8.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
