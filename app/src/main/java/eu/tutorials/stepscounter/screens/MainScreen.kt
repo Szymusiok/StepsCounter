@@ -170,14 +170,7 @@ fun MainScreen(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .height(screenHeight)
-                .graphicsLayer {
-                    transformOrigin = TransformOrigin(0.5f, 1f)
-                    scaleX = 0.85f
-                    scaleY = 0.85f
-                    scaleX = 1f
-                    scaleY = 1f / 3f
-                }
+                .height(screenHeight * 0.5f)
                 .background(
                     Color(0xFFFDFBF9),
                     shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
@@ -234,7 +227,7 @@ fun MainScreen(
                             trackingViewModel.stopTracking()
                             onNavigateToSummary(rawMeters, steps, calories.toInt(), elapsedMs, pathPoints)
                         },
-                        shape = RoundedCornerShape(0.dp),
+                        shape = RoundedCornerShape(30.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFFE37028),
                             contentColor = Color.White
@@ -292,8 +285,18 @@ fun MainScreen(
 @Composable
 private fun StatItem(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, style = MaterialTheme.typography.labelMedium, color = Color.DarkGray, fontFamily = KdamThmorPro)
-        Text(value, style = MaterialTheme.typography.headlineSmall, color = Color.Black, fontFamily = KdamThmorPro)
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.DarkGray,
+            fontFamily = KdamThmorPro
+        )
+        Text(
+            value,
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.Black,
+            fontFamily = KdamThmorPro
+        )
     }
 }
 
