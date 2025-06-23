@@ -16,6 +16,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -165,9 +167,17 @@ fun MainScreen(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .background(Color(0xFFFDFBF9), shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                .padding(vertical = 16.dp, horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+                .graphicsLayer {
+                    transformOrigin = TransformOrigin(0.5f, 1f)
+                    scaleX = 0.85f
+                    scaleY = 0.85f
+                }
+                .background(
+                    Color(0xFFFDFBF9),
+                    shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+                )
+                .padding(vertical = 12.dp, horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (!isTracking) {

@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import eu.tutorials.stepscounter.databasehelpers.AppDatabase
 import eu.tutorials.stepscounter.viewmodels.SettingsViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     userEmail: String,
@@ -57,101 +58,111 @@ fun ProfileScreen(
         isLoading = false
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
-        MountainHeaderFullScreen(modifier = Modifier.matchParentSize())
+    Scaffold(
+        containerColor = Color.Transparent,
+        topBar = {
+            TopAppBar(
+                title = { Text("Profile", fontFamily = KdamThmorPro) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+            )
+        }
+    ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            MountainHeaderFullScreen(modifier = Modifier.matchParentSize())
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 48.dp)
-        ) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.Start)
-            ) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-            }
-
+            // ← outer Column starts here
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp, bottom = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(top = 16.dp)
             ) {
-                user?.let {
-                    Text(
-                        text = "${it.firstName} ${it.lastName}",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontFamily = KdamThmorPro,
-                        color = Color.Black
-                    )
-                }
-                Text(
-                    userEmail,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.DarkGray
-                )
-
-                val todaySteps = remember(workouts, stepGoal) {
-                    val today = Calendar.getInstance()
-                    workouts.filter { w ->
-                        val cal = Calendar.getInstance().apply { time = w.timestamp.toDate() }
-                        cal.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-                                cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
-                    }.sumOf { it.steps }
-                }
-                val progress = if (stepGoal > 0) todaySteps / stepGoal.toFloat() else 0f
+                // ← inner Column for user info
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp, start = 24.dp, end = 24.dp)
+                        .padding(top = 24.dp, bottom = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    LinearProgressIndicator(
-                        progress = progress.coerceIn(0f, 1f),
-                        modifier = Modifier.fillMaxWidth(),
-                        color = Color(0xFFE37028)
-                    )
-                    Spacer(Modifier.height(4.dp))
+                    user?.let {
+                        Text(
+                            text = "${it.firstName} ${it.lastName}",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontFamily = KdamThmorPro,
+                            color = Color.Black
+                        )
+                    }
                     Text(
-                        "$todaySteps / $stepGoal steps",
+                        userEmail,
                         style = MaterialTheme.typography.bodyMedium,
-                        fontFamily = KdamThmorPro
+                        color = Color.DarkGray
                     )
+
+                    val todaySteps = remember(workouts, stepGoal) {
+                        val today = Calendar.getInstance()
+                        workouts.filter { w ->
+                            val cal = Calendar.getInstance().apply { time = w.timestamp.toDate() }
+                            cal.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                                    cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+                        }.sumOf { it.steps }
+                    }
+                    val progress = if (stepGoal > 0) todaySteps / stepGoal.toFloat() else 0f
+
+                    // ← nested Column for progress bar
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp, start = 24.dp, end = 24.dp)
+                    ) {
+                        LinearProgressIndicator(
+                            progress = progress.coerceIn(0f, 1f),
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color(0xFFE37028)
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "$todaySteps / $stepGoal steps",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontFamily = KdamThmorPro
+                        )
+                    }
                 }
-            }
 
-            Divider(modifier = Modifier.padding(horizontal = 24.dp))
+                Divider(modifier = Modifier.padding(horizontal = 24.dp))
 
-            Text(
-                "Past Workouts",
-                modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp),
-                style = MaterialTheme.typography.titleMedium,
-                fontFamily = KdamThmorPro
-            )
+                Text(
+                    "Past Workouts",
+                    modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontFamily = KdamThmorPro
+                )
 
-            if (isLoading) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(workouts) { workout ->
-                        WorkoutSummaryCard(workout) {
-                            onWorkoutClick(workout.id)
+                if (isLoading) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(workouts) { workout ->
+                            WorkoutSummaryCard(workout) {
+                                onWorkoutClick(workout.id)
+                            }
                         }
                     }
                 }
-            }
+            } // ← outer Column ends here
         }
     }
 }
-
 
 @Composable
 fun WorkoutSummaryCard(workout: Workout, onClick: () -> Unit) {
@@ -162,7 +173,9 @@ fun WorkoutSummaryCard(workout: Workout, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Date: ${SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(workout.timestamp.toDate())}")
+            Text(
+                "Date: ${SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(workout.timestamp.toDate())}"
+            )
             Text("Distance: ${"%.2f".format(workout.distanceMeters / 1000)} km")
             Text("Duration: ${formatDuration(workout.durationMs)}")
         }
